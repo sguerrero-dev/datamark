@@ -5,15 +5,31 @@ Proyecto de Ingeniería de Software · Universidad de la Costa (CUC) · 2026-2.
 
 **Integrantes:** Jonathan Molina · Orlando Hernández · Santiago Guerrero
 
-## Cuentas de demostración (contraseña `demo123`)
+## Links
 
-| Rol | Correo |
+| Qué | Link |
 |---|---|
-| SuperAdmin | admin@datamark.co |
-| Usuario Empresa | empresa@cafearhuaco.co |
-| Analista / Marketer | analista@cafearhuaco.co |
+| App en vivo (GitHub Pages) | https://sguerrero-dev.github.io/datamark/ |
+| Inicio de sesión | https://sguerrero-dev.github.io/datamark/#login |
+| Registro de empresa | https://sguerrero-dev.github.io/datamark/#registro |
+| Repositorio | https://github.com/sguerrero-dev/datamark |
 
-En la pantalla de inicio de sesión también hay botones para entrar directo con cada rol.
+## Cuentas de demostración
+
+| Rol | Correo | Contraseña | Pantalla inicial |
+|---|---|---|---|
+| SuperAdmin | admin@datamark.co | `demo123` | https://sguerrero-dev.github.io/datamark/#admin |
+| Usuario Empresa | empresa@cafearhuaco.co | `demo123` | https://sguerrero-dev.github.io/datamark/#inicio |
+| Analista / Marketer | analista@cafearhuaco.co | `demo123` | https://sguerrero-dev.github.io/datamark/#inicio |
+
+En la pantalla de inicio de sesión también hay botones para entrar directo con cada rol. Los links de cada pantalla funcionan después de iniciar sesión.
+
+### Pantallas por rol
+
+- **SuperAdmin:** [Inicio](https://sguerrero-dev.github.io/datamark/#admin) · [Empresas](https://sguerrero-dev.github.io/datamark/#empresas) · [Usuarios y permisos](https://sguerrero-dev.github.io/datamark/#usuarios) · [Suscripciones](https://sguerrero-dev.github.io/datamark/#suscripciones) · [Monitoreo](https://sguerrero-dev.github.io/datamark/#monitoreo)
+- **Usuario Empresa:** [Inicio](https://sguerrero-dev.github.io/datamark/#inicio) · [Canales](https://sguerrero-dev.github.io/datamark/#canales) · [Automatizaciones](https://sguerrero-dev.github.io/datamark/#automatizaciones) · [Contactos](https://sguerrero-dev.github.io/datamark/#contactos) · [Reportes](https://sguerrero-dev.github.io/datamark/#reportes)
+- **Analista / Marketer:** [Inicio](https://sguerrero-dev.github.io/datamark/#inicio) · [Analítica por canal](https://sguerrero-dev.github.io/datamark/#analitica) · [Segmentación](https://sguerrero-dev.github.io/datamark/#segmentacion) · [Reportes](https://sguerrero-dev.github.io/datamark/#exportar) · [Campañas](https://sguerrero-dev.github.io/datamark/#campanas)
+- **Todos:** [Configuración](https://sguerrero-dev.github.io/datamark/#configuracion)
 
 ## Qué incluye
 
