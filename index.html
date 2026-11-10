@@ -1,0 +1,1471 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DataMark</title>
+<meta name="description" content="DataMark: analítica en tiempo real y automatización de marketing multicanal. Prototipo funcional, Ingeniería de Software CUC 2026-2.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='18' height='18' rx='5' fill='%233B6FE0'/%3E%3Crect x='11' y='11' width='18' height='18' rx='5' fill='%234F8CFF' fill-opacity='.85'/%3E%3C/svg%3E">
+<style>
+/* Layout: barra superior 56px · menú lateral 240px · zona central · columna derecha 480px (solo en Inicio) */
+:root{
+  --bg:#0F0F10;--surface:#17171A;--surface-2:#222226;--surface-active:#26262B;--border:#2A2A2E;
+  --text:#F2F2F2;--text-muted:#9A9AA2;--primary:#4F8CFF;--primary-600:#3B6FE0;
+  --success:#22C55E;--warning:#F59E0B;--danger:#EF4444;
+  --canal-correo:#4F8CFF;--canal-mensajeria:#22C55E;--canal-push:#F59E0B;--canal-redes:#A78BFA;--canal-otro:#9A9AA2;
+  --radius-sm:10px;--radius-md:14px;--radius-lg:18px;
+  --font:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--primary)}
+h1,h2,h3{margin:0;text-wrap:balance}
+[hidden]{display:none!important}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--text-muted)}
+.small{font-size:13px}
+.xs{font-size:12px}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+svg.i.sm{width:16px;height:16px}
+
+/* ---------- Botones e inputs ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text);font-weight:500;white-space:nowrap;transition:background .15s}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--primary-600);border-color:var(--primary-600);color:#fff}
+.btn.primary:hover{background:#4a7ef0}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.danger:hover{background:#f05a5a}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.btn.icon{width:40px;padding:0}
+.btn.ghost{border-color:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;color:var(--text-muted);font-weight:500}
+.input,select.input,textarea.input{height:40px;padding:0 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);width:100%}
+textarea.input{height:auto;min-height:84px;padding:10px 12px;resize:vertical}
+.input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px var(--primary)}
+.input.err{border-color:var(--danger)}
+.err-msg{color:#ff8a8a;font-size:12px;min-height:0}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.check input{width:18px;height:18px;margin-top:2px;accent-color:var(--primary-600)}
+
+/* ---------- Tarjetas, chips, badges, tablas ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;min-width:0}
+.card-title{font-size:20px;font-weight:600}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{height:30px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:13px}
+.chip[aria-pressed="true"]{background:var(--surface-2);color:var(--text);border-color:var(--surface-2)}
+.badge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.ok{color:var(--success);background:rgba(34,197,94,.12)}
+.badge.warn{color:var(--warning);background:rgba(245,158,11,.12)}
+.badge.bad{color:#ff7a7a;background:rgba(239,68,68,.14)}
+.badge.off{color:var(--text-muted);background:var(--surface-2)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+.table-wrap{overflow-x:auto;margin:0 -24px;padding:0 24px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:500;padding:0 12px 10px;white-space:nowrap}
+td{padding:12px;border-top:1px solid var(--border);vertical-align:middle}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr.click{cursor:pointer}
+td.r,th.r{text-align:right}
+.up{color:var(--success)}
+.down{color:#ff7a7a}
+
+/* ---------- Layout de la app ---------- */
+.app{display:grid;grid-template-rows:56px 1fr;height:100%}
+.topbar{display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--bg);position:relative;z-index:20}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;text-decoration:none;color:var(--text);flex:none}
+.logo-mark{width:26px;height:26px;position:relative;flex:none}
+.logo-mark i{position:absolute;width:16px;height:16px;border-radius:5px}
+.logo-mark i:first-child{left:0;top:0;background:var(--primary-600)}
+.logo-mark i:last-child{right:0;bottom:0;background:var(--primary);opacity:.85}
+.search-btn{flex:0 1 480px;margin:0 auto;display:flex;align-items:center;gap:10px;height:38px;padding:0 8px 0 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-muted);text-align:left}
+.search-btn span{flex:1}
+kbd{font-family:var(--font);font-size:12px;border:1px solid var(--border);background:var(--surface-2);border-radius:6px;padding:2px 6px;color:var(--text-muted)}
+.top-actions{display:flex;align-items:center;gap:4px;flex:none;position:relative}
+.icon-btn{width:40px;height:40px;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;position:relative}
+.icon-btn:hover{background:var(--surface-2);color:var(--text)}
+.icon-btn .pip{position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid var(--bg)}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--surface-active);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--text)}
+.avatar-btn{border:none;background:transparent;padding:3px;border-radius:50%}
+.menu-toggle{display:none}
+.body{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:0}
+.app.collapsed .body{grid-template-columns:72px minmax(0,1fr)}
+.sidebar{border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:4px;overflow-y:auto;background:var(--bg)}
+.side-role{font-size:12px;color:var(--text-muted);padding:4px 12px 8px;display:flex;justify-content:space-between;align-items:center}
+.nav-item{display:flex;align-items:center;gap:12px;height:40px;padding:0 12px;border-radius:var(--radius-sm);color:var(--text-muted);text-decoration:none;font-weight:500;white-space:nowrap;overflow:hidden}
+.nav-item:hover{background:var(--surface-active);color:var(--text)}
+.nav-item[aria-current="page"]{background:var(--surface-active);color:var(--text);font-weight:700}
+.side-spacer{flex:1}
+.side-bottom{border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:4px}
+.app.collapsed .nav-item span,.app.collapsed .side-role span{display:none}
+.app.collapsed .nav-item{justify-content:center;padding:0}
+.collapse-btn svg{transition:transform .2s}
+.app.collapsed .collapse-btn svg{transform:rotate(180deg)}
+.main{overflow-y:auto;min-width:0;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:768px){.main{padding-left:32px;padding-right:32px}}
+.crumbs{font-size:13px;color:var(--text-muted);margin-bottom:6px;display:flex;gap:6px;flex-wrap:wrap}
+.crumbs b{color:var(--text);font-weight:500}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.page-title{font-size:24px;font-weight:700}
+.page-sub{color:var(--text-muted);margin-top:4px;max-width:65ch}
+.stack{display:flex;flex-direction:column;gap:24px}
+.grid{display:grid;gap:24px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+.row{display:flex;align-items:center;gap:12px}
+.between{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+
+/* ---------- Inicio: tablero ---------- */
+.dash{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:24px;align-items:start}
+@media (min-width:1500px){.dash{grid-template-columns:minmax(0,1fr) 480px}}
+@media (max-width:1279px){.dash{grid-template-columns:minmax(0,1fr)}}
+.kpi-label{font-size:15px;font-weight:500}
+.kpi{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-top:4px}
+.kpi-value{font-size:48px;font-weight:700;line-height:1.05;letter-spacing:-.02em}
+.delta{font-size:15px;font-weight:500}
+.chart-box{position:relative;height:280px;margin-top:20px;touch-action:pan-y}
+.chart-box svg.area{width:100%;height:100%;display:block;overflow:visible}
+.chart-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--primary);border:2px solid var(--bg);transform:translate(-50%,-50%);pointer-events:none}
+.chart-tip{position:absolute;pointer-events:none;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;white-space:nowrap;transform:translate(-50%,calc(-100% - 14px))}
+.chart-tip b{display:block;font-size:13px}
+.x-labels{position:relative;height:20px;margin-top:8px;font-size:12px;color:var(--text-muted)}
+.x-labels span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.x-labels span:first-child{transform:none}
+.x-labels span.now{color:var(--success);transform:translateX(-100%)}
+.chart-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chart-filters select{height:30px;border-radius:999px;padding:0 10px;background:transparent;border:1px solid var(--border);font-size:13px;color:var(--text-muted)}
+.obj-list{display:flex;flex-direction:column;gap:18px}
+.obj{display:grid;grid-template-columns:40px minmax(0,1fr);gap:16px;align-items:center}
+.obj-ic{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--surface-2);display:flex;align-items:center;justify-content:center}
+.obj-top{display:flex;justify-content:space-between;gap:12px;font-weight:600;font-size:15px;margin-bottom:8px}
+.obj-top span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;transition:width .2s}
+.perf{display:flex;flex-direction:column;gap:18px}
+.perf-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto 64px;gap:12px;align-items:center}
+.perf-row b{font-weight:700}
+.live{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--success);font-weight:600}
+.live i{width:9px;height:9px;border-radius:50%;background:var(--success);animation:pulse 1.6s ease-in-out infinite}
+.live.paused{color:var(--text-muted)}
+.live.paused i{background:var(--text-muted);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;max-height:560px;overflow-y:auto;margin-right:-8px;padding-right:8px}
+.feed li button{width:100%;display:grid;grid-template-columns:40px minmax(0,1fr);gap:14px;align-items:center;text-align:left;background:transparent;border:none;padding:10px 8px;margin:0 -8px;border-radius:var(--radius-sm);width:calc(100% + 16px)}
+.feed li button:hover{background:var(--surface-2)}
+.feed .f-ic{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--surface-2);display:flex;align-items:center;justify-content:center}
+.feed .f-txt{font-weight:600;font-size:14px}
+.feed .f-meta{font-size:12px;color:var(--text-muted);margin-top:2px}
+.feed .f-act{color:var(--primary)}
+.feed li.new{animation:fadein .2s ease-out}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.pending-bar{width:100%;margin-bottom:10px}
+
+/* ---------- Componentes varios ---------- */
+.stat{display:flex;flex-direction:column;gap:4px}
+.stat .v{font-size:clamp(22px,2.2vw,30px);overflow-wrap:anywhere;font-weight:700;letter-spacing:-.01em}
+.stat .l{font-size:13px;color:var(--text-muted)}
+.ic-box{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--surface-2);display:flex;align-items:center;justify-content:center;flex:none}
+.switch{position:relative;width:40px;height:22px;border-radius:999px;background:var(--surface-active);border:1px solid var(--border);flex:none;padding:0}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--text-muted);transition:transform .15s}
+.switch[aria-checked="true"]{background:var(--primary-600);border-color:var(--primary-600)}
+.switch[aria-checked="true"]::after{transform:translateX(18px);background:#fff}
+.rule{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;margin-top:8px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--radius-sm);background:var(--surface-2);font-size:13px}
+.arrow{color:var(--text-muted)}
+.empty{text-align:center;padding:32px 16px;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:12px}
+.svc{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--border)}
+.svc:first-child{border-top:none;padding-top:0}
+.plan{display:flex;flex-direction:column;gap:12px}
+.plan .price{font-size:28px;font-weight:700}
+.plan ul{margin:0;padding-left:18px;color:var(--text-muted);font-size:14px;display:flex;flex-direction:column;gap:4px}
+.hint{font-size:13px;color:var(--text-muted);background:var(--surface-2);border-radius:var(--radius-sm);padding:10px 12px}
+
+/* ---------- Modal, drawer, toasts, popovers ---------- */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:min(560px,100%);max-height:calc(100% - 32px);overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:18px}
+.modal.wide{width:min(760px,100%)}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.modal-title{font-size:20px;font-weight:600}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.steps{display:flex;gap:8px}
+.steps span{flex:1;height:4px;border-radius:999px;background:var(--surface-2)}
+.steps span.on{background:var(--primary)}
+.drawer-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:45}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--surface);border-left:1px solid var(--border);z-index:46;overflow-y:auto;padding:24px;padding-top:max(24px,env(safe-area-inset-top,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.timeline li{display:grid;grid-template-columns:12px minmax(0,1fr);gap:12px;font-size:14px}
+.timeline li .dot{margin-top:5px}
+.toasts{position:fixed;top:calc(68px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:80;display:flex;flex-direction:column;gap:10px;width:min(380px,calc(100% - 32px))}
+.toast{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--radius-md);background:var(--surface-2);border:1px solid var(--border);border-left:4px solid var(--success);font-size:14px;animation:fadein .2s}
+.toast.bad{border-left-color:var(--danger)}
+.toast .t-ic{color:var(--success)}
+.toast.bad .t-ic{color:var(--danger)}
+.toast b{display:block}
+.pop{position:absolute;top:48px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);width:min(340px,calc(100vw - 32px));padding:8px;z-index:30;display:flex;flex-direction:column}
+.pop .pi{padding:10px 12px;border-radius:var(--radius-sm);font-size:14px;display:flex;gap:10px;align-items:flex-start;background:transparent;border:none;text-align:left;color:var(--text)}
+.pop button.pi:hover{background:var(--surface-2)}
+.pop .ph{padding:8px 12px;font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+.palette{width:min(600px,100%);padding:0;gap:0;align-self:flex-start;margin-top:10vh}
+.palette input{border:none;border-bottom:1px solid var(--border);border-radius:0;height:56px;background:transparent;padding:0 20px;font-size:16px}
+.palette input:focus{box-shadow:none}
+.pal-list{list-style:none;margin:0;padding:8px;max-height:50vh;overflow-y:auto}
+.pal-list li{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer}
+.pal-list li[aria-selected="true"]{background:var(--surface-active)}
+.pal-list .pk{margin-left:auto;font-size:12px;color:var(--text-muted)}
+
+/* ---------- Acceso ---------- */
+.auth{min-height:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.auth-side{background:var(--surface);border-right:1px solid var(--border);padding:48px;display:flex;flex-direction:column;justify-content:space-between;gap:32px}
+.auth-side h1{font-size:34px;line-height:1.15;max-width:18ch}
+.auth-side p{color:var(--text-muted);max-width:46ch}
+.auth-main{display:flex;align-items:center;justify-content:center;padding-block:48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.auth-form{width:min(400px,100%);display:flex;flex-direction:column;gap:16px}
+.demo-accs{display:flex;flex-direction:column;gap:8px}
+.demo-acc{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border);background:var(--bg);text-align:left}
+.demo-acc:hover{border-color:var(--primary)}
+.mini-feed{display:flex;flex-direction:column;gap:10px}
+.mini-feed div{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-muted)}
+@media (max-width:900px){.auth{grid-template-columns:1fr}.auth-side{display:none}}
+
+/* ---------- Responsivo ---------- */
+@media (max-width:767px){
+  .menu-toggle{display:inline-flex}
+  .body,.app.collapsed .body{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:fixed;top:0;bottom:0;left:0;width:min(280px,85vw);z-index:60;transform:translateX(-105%);transition:transform .2s;padding-top:max(16px,env(safe-area-inset-top,0px))}
+  .app.drawer-open .sidebar{transform:none}
+  .app.collapsed .nav-item span,.app.collapsed .side-role span{display:inline}
+  .app.collapsed .nav-item{justify-content:flex-start;padding:0 12px}
+  .collapse-btn{display:none}
+  .side-scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55}
+  .search-btn{flex:none;width:40px;padding:0;justify-content:center;margin-left:auto;margin-right:0}
+  .search-btn span,.search-btn kbd{display:none}
+  .top-actions .hide-sm{display:none}
+  .logo span{display:none}
+  .kpi-value{font-size:40px}
+  .chart-box{height:220px}
+  .card{padding:20px}
+  .table-wrap{margin:0 -20px;padding:0 20px}
+  .perf-row{grid-template-columns:auto minmax(0,1fr) auto 56px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* =========================================================
+   DataMark · prototipo funcional (datos de prueba / mocks)
+   Ingeniería de Software · CUC 2026-2
+   ========================================================= */
+
+// ---------- Utilidades ----------
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const fmt = n => Math.round(n).toLocaleString('es-CO');
+const fmt1 = n => n.toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const money = n => '$' + Math.round(n).toLocaleString('es-CO');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = p => p + '_' + Math.random().toString(36).slice(2, 8);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function seeded(seed) { return () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('dm_' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('dm_' + k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem('dm_' + k); } catch {} }
+};
+function ago(ts) {
+  const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+  if (s < 60) return `hace ${s} s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `hace ${m} min`;
+  return `hace ${Math.floor(m / 60)} h`;
+}
+
+// ---------- Íconos (Lucide, trazo 2 px) ----------
+const IC = {
+  home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  chart: '<line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>',
+  zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  plug: '<path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+  sliders: '<line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/>',
+  search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  help: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+  building: '<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+  card: '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
+  activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+  menu: '<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  pause: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+  play: '<polygon points="6 3 20 12 6 21 6 3"/>',
+  mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  msg: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  phone: '<rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
+  form: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M8 11h8"/><path d="M8 16h5"/>',
+  cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+  pencil: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  alert: '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
+  server: '<rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  chevron: '<path d="m15 18-6-6 6-6"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  pay: '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+  copy: '<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>'
+};
+const icon = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${IC[n] || ''}</svg>`;
+
+// ---------- Canales ----------
+const CH = {
+  correo: { n: 'Correo electrónico', s: 'Correo', c: 'var(--canal-correo)', ic: 'mail' },
+  mensajeria: { n: 'Mensajería', s: 'Mensajería', c: 'var(--canal-mensajeria)', ic: 'msg' },
+  push: { n: 'Notificaciones push', s: 'Push', c: 'var(--canal-push)', ic: 'phone' },
+  redes: { n: 'Redes sociales', s: 'Redes', c: 'var(--canal-redes)', ic: 'share' }
+};
+const CHK = Object.keys(CH);
+const chDot = k => `<span class="dot" style="background:${CH[k] ? CH[k].c : 'var(--canal-otro)'}"></span>`;
+
+// ---------- Roles, rutas y menú ----------
+const ROLES = {
+  admin: {
+    n: 'SuperAdmin', home: 'admin',
+    nav: [['admin', 'Inicio', 'home'], ['empresas', 'Empresas', 'building'], ['usuarios', 'Usuarios y permisos', 'users'], ['suscripciones', 'Suscripciones', 'card'], ['monitoreo', 'Monitoreo', 'activity']]
+  },
+  empresa: {
+    n: 'Usuario Empresa', home: 'inicio',
+    nav: [['inicio', 'Inicio', 'home'], ['canales', 'Canales', 'plug'], ['automatizaciones', 'Automatizaciones', 'zap'], ['contactos', 'Contactos', 'users'], ['reportes', 'Reportes', 'file']]
+  },
+  analista: {
+    n: 'Analista / Marketer', home: 'inicio',
+    nav: [['inicio', 'Inicio', 'home'], ['analitica', 'Analítica por canal', 'chart'], ['segmentacion', 'Segmentación', 'target'], ['exportar', 'Reportes', 'file'], ['campanas', 'Campañas', 'send']]
+  }
+};
+const PAGE_NAMES = { admin: 'Inicio', empresas: 'Empresas', usuarios: 'Usuarios y permisos', suscripciones: 'Suscripciones y facturación', monitoreo: 'Monitoreo', inicio: 'Inicio', canales: 'Canales', automatizaciones: 'Automatizaciones', contactos: 'Contactos', reportes: 'Reportes', analitica: 'Analítica por canal', segmentacion: 'Segmentación', exportar: 'Reportes', campanas: 'Campañas', configuracion: 'Configuración' };
+const DEMO = {
+  admin: { email: 'admin@datamark.co', name: 'Equipo DataMark', ini: 'DM', empresa: 'DataMark' },
+  empresa: { email: 'empresa@cafearhuaco.co', name: 'Carolina Mejía', ini: 'CM', empresa: 'Café Arhuaco SAS' },
+  analista: { email: 'analista@cafearhuaco.co', name: 'Felipe Ruiz', ini: 'FR', empresa: 'Café Arhuaco SAS' }
+};
+const DEMO_PASS = 'demo123';
+
+// ---------- Datos de prueba ----------
+const CONTACTS = [
+  ['c_9981', 'Laura Gómez', 'Barranquilla', 'VIP', 'correo'], ['c_9982', 'Andrés Pérez', 'Medellín', 'Compradores frecuentes', 'mensajeria'],
+  ['c_9983', 'Valentina Ríos', 'Bogotá', 'Nuevos', 'push'], ['c_9984', 'Camilo Herrera', 'Cali', 'Carrito abandonado', 'correo'],
+  ['c_9985', 'Mariana Torres', 'Santa Marta', 'VIP', 'redes'], ['c_9986', 'Julián Castro', 'Cartagena', 'Inactivos 30 días', 'correo'],
+  ['c_9987', 'Daniela Suárez', 'Barranquilla', 'Nuevos', 'mensajeria'], ['c_9988', 'Sebastián Ortiz', 'Bucaramanga', 'Compradores frecuentes', 'push'],
+  ['c_9989', 'Isabella Martínez', 'Pereira', 'VIP', 'correo'], ['c_9990', 'Mateo Vargas', 'Barranquilla', 'Nuevos', 'redes'],
+  ['c_9991', 'Sofía Medina', 'Cúcuta', 'Carrito abandonado', 'mensajeria'], ['c_9992', 'Nicolás Rojas', 'Montería', 'Inactivos 30 días', 'push']
+].map(([id, name, city, seg, pref], i) => ({
+  id, name, city, seg, pref,
+  email: name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(' ', '.') + '@ejemplo.com',
+  inter: 40 + ((i * 37) % 160), compras: (i * 7) % 9, since: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep'][i % 9] + ' 2026',
+  hist: []
+}));
+const contactById = id => CONTACTS.find(c => c.id === id);
+
+const OBJECTS = {
+  carrito: { n: 'Correo · «Carrito abandonado»', ch: 'correo', v: 1842 },
+  oferta: { n: 'Push · «Oferta 24 h»', ch: 'push', v: 1310 },
+  bienvenida: { n: 'Mensaje · «Bienvenida»', ch: 'mensajeria', v: 1022 },
+  lanzamiento: { n: 'Red social · Publicación de lanzamiento', ch: 'redes', v: 744 },
+  ofertaMail: { n: 'Correo · «Oferta 24 h»', ch: 'correo', v: 690 }
+};
+
+const TRIGGERS = {
+  carrito: { n: 'Carrito abandonado', src: 'Tienda web', ic: 'cart' },
+  formulario: { n: 'Formulario «Solicitar demo» enviado', src: 'Formulario web', ic: 'form' },
+  pago: { n: 'Pago confirmado', src: 'Pasarela de pago', ic: 'pay' },
+  seguidor: { n: 'Nuevo seguidor en redes', src: 'Instagram', ic: 'share' },
+  apertura: { n: 'Abrió un correo y no compró en 24 h', src: 'Correo', ic: 'mail' },
+  inactivo: { n: 'Inactivo durante 30 días', src: 'Base de contactos', ic: 'user' }
+};
+const ACTIONS = {
+  correo: 'Enviar correo', mensajeria: 'Enviar mensaje de WhatsApp', push: 'Enviar notificación push', redes: 'Responder por mensaje directo'
+};
+
+const DEFAULT_RULES = [
+  { id: 'r1', name: 'Recuperar carritos', trig: 'carrito', ch: 'correo', tpl: 'Recupera tu carrito con 10 % de descuento', wait: 'Inmediato', on: true, runs: 342 },
+  { id: 'r2', name: 'Contactar solicitudes de demo', trig: 'formulario', ch: 'mensajeria', tpl: 'Hola, gracias por escribirnos. ¿Agendamos la demo?', wait: 'Inmediato', on: true, runs: 118 },
+  { id: 'r3', name: 'Agradecer compras', trig: 'pago', ch: 'push', tpl: 'Gracias por tu compra. Tu pedido va en camino.', wait: '5 min', on: true, runs: 509 },
+  { id: 'r4', name: 'Reactivar inactivos', trig: 'inactivo', ch: 'correo', tpl: 'Te extrañamos: 15 % en tu próximo café', wait: '1 día', on: false, runs: 76 }
+];
+const DEFAULT_INTEGRATIONS = [
+  { id: 'ig', name: 'Instagram Business', type: 'Red social', req: 'R2-1', ic: 'share', status: 'ok', detail: 'Conectado como @cafearhuaco', field: 'Token de acceso de Meta' },
+  { id: 'fb', name: 'Facebook Pages', type: 'Red social', req: 'R2-1', ic: 'share', status: 'off', detail: 'Sin conectar', field: 'Token de acceso de Meta' },
+  { id: 'form', name: 'Formulario web', type: 'Formulario', req: 'R2-2', ic: 'form', status: 'ok', detail: 'cafearhuaco.co/demo · webhook activo', field: 'URL del formulario' },
+  { id: 'wompi', name: 'Wompi', type: 'Pasarela de pago', req: 'R2-3', ic: 'pay', status: 'ok', detail: 'Llave pública pub_prod_…7Hk', field: 'Llave privada de Wompi' },
+  { id: 'payu', name: 'PayU', type: 'Pasarela de pago', req: 'R2-3', ic: 'pay', status: 'off', detail: 'Sin conectar', field: 'API key de PayU' },
+  { id: 'wa', name: 'WhatsApp Business', type: 'Mensajería', req: 'R2-1', ic: 'msg', status: 'error', detail: 'El token venció el 8 nov', field: 'Token de WhatsApp Cloud API' }
+];
+const CAMPAIGNS = [
+  { id: 'k1', name: 'Recupera tu carrito', ch: 'correo', sent: 1240, deliv: 1212, open: 0.46, conv: 0.081, status: 'ok', integ: null },
+  { id: 'k2', name: 'Oferta 24 h', ch: 'push', sent: 3820, deliv: 3701, open: 0.31, conv: 0.042, status: 'ok', integ: null },
+  { id: 'k3', name: 'Reactivación por WhatsApp', ch: 'mensajeria', sent: 410, deliv: 0, open: 0, conv: 0, status: 'bad', integ: 'wa', reason: 'Token de WhatsApp vencido' },
+  { id: 'k4', name: 'Lanzamiento café de origen', ch: 'redes', sent: 2150, deliv: 2150, open: 0.22, conv: 0.019, status: 'ok', integ: 'ig' },
+  { id: 'k5', name: 'Te extrañamos', ch: 'correo', sent: 860, deliv: 841, open: 0.28, conv: 0.033, status: 'warn', integ: null }
+];
+const DEFAULT_SEGMENTS = [
+  { id: 's1', name: 'VIP', crit: 'Compró 3 o más veces en 90 días', size: 312 },
+  { id: 's2', name: 'Compradores frecuentes', crit: 'Compró al menos 1 vez en 30 días', size: 1184 },
+  { id: 's3', name: 'Carrito abandonado', crit: 'Dejó productos en el carrito en las últimas 48 h', size: 207 },
+  { id: 's4', name: 'Nuevos', crit: 'Se registró en los últimos 14 días', size: 538 },
+  { id: 's5', name: 'Inactivos 30 días', crit: 'Sin interacción en 30 días', size: 963 }
+];
+const COMPANIES = [
+  { id: 'emp_123', name: 'Café Arhuaco SAS', nit: '901.452.118-3', plan: 'Pro', users: 4, status: 'ok', city: 'Barranquilla', since: 'mar 2026', events: 12480 },
+  { id: 'emp_124', name: 'Moda Caribe', nit: '900.871.002-1', plan: 'Empresarial', users: 9, status: 'ok', city: 'Cartagena', since: 'ene 2026', events: 38210 },
+  { id: 'emp_125', name: 'TecnoAndes', nit: '901.110.554-7', plan: 'Básico', users: 2, status: 'warn', city: 'Medellín', since: 'sep 2026', events: 2104 },
+  { id: 'emp_126', name: 'Ferretería El Puerto', nit: '800.334.912-0', plan: 'Pro', users: 3, status: 'ok', city: 'Santa Marta', since: 'jun 2026', events: 6630 },
+  { id: 'emp_127', name: 'Óptica Visión Clara', nit: '901.668.230-5', plan: 'Básico', users: 1, status: 'bad', city: 'Bogotá', since: 'oct 2026', events: 0 }
+];
+const PERMS = ['Ver analítica', 'Crear automatizaciones', 'Gestionar canales', 'Exportar reportes', 'Gestionar contactos'];
+const ROLE_PERMS = { 'Usuario Empresa': [0, 1, 2, 3, 4], 'Analista / Marketer': [0, 3], 'Solo lectura': [0] };
+const DEFAULT_USERS = [
+  { id: 'u1', name: 'Carolina Mejía', email: 'empresa@cafearhuaco.co', emp: 'emp_123', role: 'Usuario Empresa', perms: [0, 1, 2, 3, 4], last: 'hace 2 min' },
+  { id: 'u2', name: 'Felipe Ruiz', email: 'analista@cafearhuaco.co', emp: 'emp_123', role: 'Analista / Marketer', perms: [0, 3], last: 'hace 1 h' },
+  { id: 'u3', name: 'Paula Ríos', email: 'paula@cafearhuaco.co', emp: 'emp_123', role: 'Analista / Marketer', perms: [0, 3], last: 'ayer' },
+  { id: 'u4', name: 'Diego Charris', email: 'diego@cafearhuaco.co', emp: 'emp_123', role: 'Solo lectura', perms: [0], last: 'hace 3 días' },
+  { id: 'u5', name: 'Natalia Pérez', email: 'natalia@modacaribe.co', emp: 'emp_124', role: 'Usuario Empresa', perms: [0, 1, 2, 3, 4], last: 'hace 10 min' },
+  { id: 'u6', name: 'Ricardo Polo', email: 'ricardo@modacaribe.co', emp: 'emp_124', role: 'Analista / Marketer', perms: [0, 3], last: 'hoy' },
+  { id: 'u7', name: 'Lina Acosta', email: 'lina@tecnoandes.co', emp: 'emp_125', role: 'Usuario Empresa', perms: [0, 1, 2, 3, 4], last: 'hace 5 días' },
+  { id: 'u8', name: 'Hernán Díaz', email: 'hernan@elpuerto.co', emp: 'emp_126', role: 'Usuario Empresa', perms: [0, 1, 2, 3, 4], last: 'ayer' },
+  { id: 'u9', name: 'Gloria Barrios', email: 'gloria@visionclara.co', emp: 'emp_127', role: 'Usuario Empresa', perms: [0, 1, 2, 3, 4], last: 'nunca' }
+];
+const PLANS = [
+  { n: 'Básico', p: 89000, f: ['1 usuario · 2 canales', '5 automatizaciones', '10.000 eventos/mes'] },
+  { n: 'Pro', p: 249000, f: ['5 usuarios · canales ilimitados', '50 automatizaciones', '100.000 eventos/mes', 'Exportación PDF y Excel'] },
+  { n: 'Empresarial', p: 690000, f: ['Usuarios ilimitados', 'Automatizaciones ilimitadas', '1.000.000 eventos/mes', 'Soporte prioritario y SLA 99,9 %'] }
+];
+const INVOICES = [
+  ['FAC-2026-1104', 'Moda Caribe', 'Empresarial', 690000, 'Pagada', '1 nov 2026'],
+  ['FAC-2026-1103', 'Café Arhuaco SAS', 'Pro', 249000, 'Pagada', '1 nov 2026'],
+  ['FAC-2026-1102', 'Ferretería El Puerto', 'Pro', 249000, 'Pendiente', '1 nov 2026'],
+  ['FAC-2026-1101', 'TecnoAndes', 'Básico', 89000, 'Vencida', '1 oct 2026'],
+  ['FAC-2026-1100', 'Óptica Visión Clara', 'Básico', 89000, 'Pendiente', '28 oct 2026']
+];
+const SERVICES = [
+  { n: 'API REST (Node.js)', lat: 84, up: 99.98, st: 'ok' },
+  { n: 'Servidor en tiempo real (WebSocket)', lat: 22, up: 99.95, st: 'ok' },
+  { n: 'Motor de analítica', lat: 140, up: 99.91, st: 'ok' },
+  { n: 'Motor de automatización', lat: 96, up: 99.93, st: 'ok' },
+  { n: 'Cola de eventos', lat: 8, up: 99.99, st: 'ok' },
+  { n: 'Servicio de notificaciones', lat: 410, up: 99.42, st: 'warn', note: 'Proveedor de WhatsApp con demoras' },
+  { n: 'PostgreSQL (respaldo diario 02:00)', lat: 12, up: 99.99, st: 'ok' }
+];
+
+// ---------- Estado ----------
+const S = {
+  session: store.get('session', null),
+  route: null,
+  rules: store.get('rules', DEFAULT_RULES),
+  integ: store.get('integ', DEFAULT_INTEGRATIONS),
+  users: store.get('users', DEFAULT_USERS),
+  segments: store.get('segments', DEFAULT_SEGMENTS),
+  companies: COMPANIES.slice(),
+  campaigns: CAMPAIGNS.map(c => ({ ...c })),
+  reports: [],
+  notifs: [
+    { t: 'Campaña «Reactivación por WhatsApp» falló', d: 'El token de WhatsApp venció. Reconecta el canal.', bad: true, ts: Date.now() - 3600e3 },
+    { t: 'Campaña «Oferta 24 h» ejecutada', d: '3.701 notificaciones entregadas', bad: false, ts: Date.now() - 7200e3 }
+  ],
+  notifSeen: false,
+  range: 'hoy', chFilter: 'todos',
+  feed: [], pending: [], paused: false,
+  collapsed: store.get('collapsed', false),
+  company: store.get('company', { name: 'Café Arhuaco SAS', nit: '901.452.118-3', city: 'Barranquilla', email: 'hola@cafearhuaco.co', sector: 'Comercio electrónico de alimentos' })
+};
+const save = k => store.set(k, S[k]);
+
+// Series de interacciones por canal: Hoy (24 h), 7 días, 30 días
+function buildSeries() {
+  const r = seeded(2026);
+  const share = { correo: .337, mensajeria: .255, push: .204, redes: .204 };
+  const hourShape = h => .25 + Math.max(0, Math.sin((h - 6) / 24 * Math.PI * 1.15)) * 1.2 + (h >= 12 && h <= 16 ? .3 : 0);
+  const now = new Date();
+  const hours = [...Array(24)].map((_, i) => (now.getHours() - 23 + i + 24) % 24);
+  const weights = hours.map(h => hourShape(h) * (0.85 + r() * .3));
+  const wsum = weights.reduce((a, b) => a + b, 0);
+  const hoy = {}, d7 = {}, d30 = {};
+  CHK.forEach(k => {
+    hoy[k] = weights.map(w => Math.round(12480 * share[k] * w / wsum));
+    d7[k] = [...Array(7)].map((_, i) => Math.round(12480 * share[k] * (0.82 + r() * .28) * (i === 6 ? 1 : 1)));
+    d30[k] = [...Array(30)].map((_, i) => Math.round(12480 * share[k] * (0.7 + r() * .4) * (0.85 + i / 200)));
+  });
+  // Ajustar canales para que coincidan con la guía (4.210 · 3.180 · 2.540 · 2.550)
+  const target = { correo: 4210, mensajeria: 3180, push: 2540, redes: 2550 };
+  CHK.forEach(k => {
+    const sum = hoy[k].reduce((a, b) => a + b, 0);
+    hoy[k][23] += target[k] - sum;
+    d7[k][6] = target[k]; d30[k][29] = target[k];
+  });
+  const days = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+  return {
+    hoy: { data: hoy, labels: hours.map(h => String(h).padStart(2, '0') + ':00'), tick: i => (hours[i] % 8 === 0 ? hours[i] : null) },
+    d7: { data: d7, labels: [...Array(7)].map((_, i) => { const d = new Date(now - (6 - i) * 864e5); return days[d.getDay()] + ' ' + d.getDate(); }), tick: i => i },
+    d30: { data: d30, labels: [...Array(30)].map((_, i) => { const d = new Date(now - (29 - i) * 864e5); return d.getDate() + ' ' + ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]; }), tick: i => (i % 7 === 0 ? i : null) }
+  };
+}
+const SERIES = buildSeries();
+const PREV = { hoy: 11513, d7: 79800, d30: 341200 }; // periodo anterior para la variación
+const CH_DELTA = { correo: 12, mensajeria: 6, push: -2, redes: 9 };
+
+// ---------- Motor de eventos simulado (WebSocket mock) ----------
+const EVENT_TPL = [
+  { w: 4, ch: 'correo', obj: 'ofertaMail', ev: 'apertura', txt: n => `${n} abrió el correo «Oferta 24 h»`, trig: 'apertura' },
+  { w: 4, ch: 'correo', obj: 'carrito', ev: 'clic', txt: n => `${n} hizo clic en el correo «Carrito abandonado»` },
+  { w: 3, ch: 'push', obj: 'oferta', ev: 'clic', txt: n => `${n} hizo clic en la notificación push «Oferta 24 h»` },
+  { w: 3, ch: 'mensajeria', obj: 'bienvenida', ev: 'respuesta', txt: n => `${n} respondió el mensaje «Bienvenida»` },
+  { w: 2, ch: 'redes', obj: 'lanzamiento', ev: 'comentario', txt: n => `${n} comentó la publicación de lanzamiento` },
+  { w: 1, ch: 'redes', obj: null, ev: 'seguidor', txt: n => `${n} empezó a seguir la cuenta en Instagram`, trig: 'seguidor', src: 'Instagram' },
+  { w: 2, ch: null, obj: null, ev: 'carrito', txt: n => `${n} abandonó su carrito`, trig: 'carrito', src: 'Tienda web' },
+  { w: 1, ch: null, obj: null, ev: 'formulario', txt: n => `${n} completó «Solicitar demo»`, trig: 'formulario', src: 'Formulario web' },
+  { w: 2, ch: null, obj: null, ev: 'pago', txt: n => `${n} pagó un pedido de ${money(38 + Math.floor(Math.random() * 180) * 1000)}`, trig: 'pago', src: 'Pasarela de pago' }
+];
+const EV_BAG = EVENT_TPL.flatMap(t => Array(t.w).fill(t));
+
+function makeEvent(ts = Date.now()) {
+  const t = pick(EV_BAG), c = pick(CONTACTS);
+  // El motor de automatización evalúa las reglas activas sobre el evento
+  const rule = t.trig ? S.rules.find(r => r.on && r.trig === t.trig) : null;
+  let action = null;
+  if (rule) {
+    const integOk = !(rule.ch === 'mensajeria' && S.integ.find(i => i.id === 'wa')?.status !== 'ok');
+    action = { rule: rule.name, ch: rule.ch, ok: integOk, txt: integOk ? `${CH[rule.ch].s.toLowerCase()} enviado` : `falló el envío por ${CH[rule.ch].s.toLowerCase()}` };
+  }
+  return {
+    tipo: 'interaccion', tenant_id: 'emp_123', id: uid('ev'), canal: t.ch, objeto: t.obj, evento: t.ev,
+    contacto_id: c.id, texto: t.txt(c.name), fuente: t.src || CH[t.ch].s, accion: action, ts
+  };
+}
+function applyEvent(e, live = true) {
+  if (e.canal) {
+    ['hoy', 'd7', 'd30'].forEach(r => { const a = SERIES[r].data[e.canal]; a[a.length - 1]++; });
+  }
+  if (e.objeto) OBJECTS[e.objeto].v++;
+  if (e.accion) {
+    const rule = S.rules.find(r => r.name === e.accion.rule);
+    if (rule && e.accion.ok) rule.runs++;
+  }
+  const c = contactById(e.contacto_id);
+  c.inter++;
+  c.hist.unshift({ txt: e.texto.replace(c.name, '').trim(), ch: e.canal, ts: e.ts, accion: e.accion });
+  if (c.hist.length > 20) c.hist.pop();
+  if (S.paused && live) { S.pending.unshift(e); }
+  else { S.feed.unshift(e); if (S.feed.length > 50) S.feed.pop(); }
+  dirty = true;
+}
+// Historial inicial
+let dirty = false;
+for (let i = 14; i >= 1; i--) applyEvent(makeEvent(Date.now() - i * 9000 - Math.random() * 4000), false);
+CONTACTS.forEach((c, i) => {
+  c.hist.push({ txt: 'se registró en la tienda web', ch: null, ts: Date.now() - (i + 3) * 864e5, accion: null });
+});
+function scheduleEvents() {
+  setTimeout(() => {
+    if (S.session && S.session.role !== 'admin') applyEvent(makeEvent());
+    scheduleEvents();
+  }, 900 + Math.random() * 2200);
+}
+scheduleEvents();
+// Agrupar actualizaciones: máximo una por segundo
+setInterval(() => {
+  if (!S.session) return;
+  if (S.route === 'inicio') updateLive(dirty);
+  if (S.route === 'monitoreo') updateMonitor();
+  dirty = false;
+}, 1000);
+
+// ---------- Toasts (R1-5, R2-5, RF17, RF22, RF27) ----------
+function toast(title, desc = '', ok = true) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (ok ? '' : ' bad');
+  el.innerHTML = `<span class="t-ic">${icon(ok ? 'check' : 'alert')}</span><div><b>${esc(title)}</b>${desc ? `<span class="muted small">${esc(desc)}</span>` : ''}</div>`;
+  $('#toasts').appendChild(el);
+  while ($('#toasts').children.length > 3) $('#toasts').firstChild.remove();
+  setTimeout(() => el.remove(), 4000);
+}
+function notify(t, d, bad = false) { S.notifs.unshift({ t, d, bad, ts: Date.now() }); S.notifSeen = false; const p = $('#notif-pip'); if (p) p.hidden = false; }
+
+// ---------- Modal ----------
+let modalReturn = null;
+function openModal(html, cls = '') {
+  closeModal(true);
+  modalReturn = document.activeElement;
+  const ov = document.createElement('div');
+  ov.className = 'overlay'; ov.id = 'overlay';
+  ov.innerHTML = `<div class="modal ${cls}" role="dialog" aria-modal="true">${html}</div>`;
+  ov.addEventListener('mousedown', e => { if (e.target === ov) closeModal(); });
+  document.body.appendChild(ov);
+  const f = $('input,select,textarea,button:not([data-close])', ov) || $('button', ov);
+  f && f.focus();
+  return $('.modal', ov);
+}
+function closeModal(silent) {
+  const ov = $('#overlay'); if (!ov) return;
+  ov.remove();
+  if (!silent && modalReturn && document.contains(modalReturn)) modalReturn.focus();
+}
+const modalHead = (t, sub = '') => `<div class="modal-head"><div><div class="modal-title">${t}</div>${sub ? `<div class="muted small" style="margin-top:4px">${sub}</div>` : ''}</div><button class="icon-btn" data-close aria-label="Cerrar">${icon('x')}</button></div>`;
+function confirmModal({ title, text, ok = 'Eliminar', onOk }) {
+  const m = openModal(`${modalHead(title)}<p class="muted" style="margin:0">${text}</p><div class="modal-actions"><button class="btn" data-close>Cancelar</button><button class="btn danger" id="cf-ok">${icon('trash', 'sm')}${ok}</button></div>`);
+  $('#cf-ok', m).onclick = () => { closeModal(); onOk(); };
+}
+
+// ---------- Drawer de contacto ----------
+function openContact(id) {
+  const c = contactById(id); if (!c) return;
+  closeDrawer();
+  const applied = c.hist.filter(h => h.accion);
+  const wrap = document.createElement('div');
+  wrap.id = 'drawer';
+  wrap.innerHTML = `<div class="drawer-ov" data-close-drawer></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Perfil de ${esc(c.name)}">
+    <div class="row between"><div class="row"><span class="avatar" style="width:48px;height:48px;font-size:16px">${c.name.split(' ').map(p => p[0]).join('')}</span>
+      <div><div style="font-size:20px;font-weight:600">${esc(c.name)}</div><div class="muted small">${esc(c.email)} · ${esc(c.city)}</div></div></div>
+      <button class="icon-btn" data-close-drawer aria-label="Cerrar perfil">${icon('x')}</button></div>
+    <div class="grid g3" style="gap:12px;grid-template-columns:repeat(3,minmax(0,1fr))">
+      <div class="card" style="padding:14px"><div class="muted xs">Interacciones</div><div class="num" style="font-size:22px;font-weight:700">${fmt(c.inter)}</div></div>
+      <div class="card" style="padding:14px"><div class="muted xs">Compras</div><div class="num" style="font-size:22px;font-weight:700">${c.compras}</div></div>
+      <div class="card" style="padding:14px"><div class="muted xs">Cliente desde</div><div style="font-size:15px;font-weight:600;margin-top:4px">${c.since}</div></div>
+    </div>
+    <div class="row wrap" style="gap:8px"><span class="pill">${icon('target', 'sm')} ${esc(c.seg)}</span><span class="pill">${chDot(c.pref)} Prefiere ${CH[c.pref].s.toLowerCase()}</span></div>
+    <div><h3 style="font-size:16px;margin-bottom:12px">Automatizaciones aplicadas</h3>
+      ${applied.length ? `<ul class="timeline">${applied.slice(0, 5).map(h => `<li><span class="dot" style="background:${h.accion.ok ? 'var(--success)' : 'var(--danger)'}"></span><div><b>${esc(h.accion.rule)}</b><div class="muted small">${esc(h.accion.txt)} · ${ago(h.ts)}</div></div></li>`).join('')}</ul>` : '<p class="muted small" style="margin:0">Todavía no se le ha aplicado ninguna automatización.</p>'}
+    </div>
+    <div><h3 style="font-size:16px;margin-bottom:12px">Historial de interacciones</h3>
+      <ul class="timeline">${c.hist.map(h => `<li>${chDot(h.ch)}<div>${esc(h.txt.charAt(0).toUpperCase() + h.txt.slice(1))}<div class="muted small">${h.ch ? CH[h.ch].s : 'Sistema'} · ${ago(h.ts)}</div></div></li>`).join('')}</ul>
+    </div>
+  </aside>`;
+  document.body.appendChild(wrap);
+  $('.drawer button', wrap).focus();
+}
+function closeDrawer() { const d = $('#drawer'); d && d.remove(); }
+
+// ---------- Paleta de búsqueda (Ctrl+K) ----------
+function openPalette() {
+  if (!S.session) return;
+  const role = ROLES[S.session.role];
+  const items = [
+    ...role.nav.map(([r, n, ic]) => ({ n, ic, k: 'Ir a', go: () => go(r) })),
+    { n: 'Configuración', ic: 'sliders', k: 'Ir a', go: () => go('configuracion') },
+    ...(S.session.role !== 'admin' ? CONTACTS.map(c => ({ n: c.name, ic: 'user', k: 'Contacto', go: () => openContact(c.id) })) : []),
+    ...(S.session.role === 'empresa' ? [{ n: 'Crear automatización', ic: 'plus', k: 'Acción', go: () => { go('automatizaciones'); setTimeout(() => ruleWizard(), 50); } }] : []),
+    ...(S.session.role === 'admin' ? S.companies.map(c => ({ n: c.name, ic: 'building', k: 'Empresa', go: () => go('empresas') })) : []),
+    { n: 'Cerrar sesión', ic: 'logout', k: 'Acción', go: logout }
+  ];
+  const m = openModal(`<label class="sr-only" for="pal-q">Buscar</label><input class="input" id="pal-q" placeholder="Busca pantallas, contactos o acciones…" autocomplete="off"><ul class="pal-list" id="pal-list" role="listbox"></ul>`, 'palette');
+  let sel = 0, list = items;
+  const draw = () => {
+    $('#pal-list', m).innerHTML = list.length ? list.map((it, i) => `<li role="option" data-i="${i}" aria-selected="${i === sel}">${icon(it.ic)}<span>${esc(it.n)}</span><span class="pk">${it.k}</span></li>`).join('') : '<li class="muted">Sin resultados</li>';
+  };
+  const q = $('#pal-q', m);
+  q.oninput = () => { const v = q.value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); list = items.filter(it => it.n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(v)); sel = 0; draw(); };
+  q.onkeydown = e => {
+    if (e.key === 'ArrowDown') { sel = Math.min(list.length - 1, sel + 1); draw(); e.preventDefault(); }
+    if (e.key === 'ArrowUp') { sel = Math.max(0, sel - 1); draw(); e.preventDefault(); }
+    if (e.key === 'Enter' && list[sel]) { closeModal(true); list[sel].go(); }
+  };
+  $('#pal-list', m).onclick = e => { const li = e.target.closest('[data-i]'); if (li) { closeModal(true); list[+li.dataset.i].go(); } };
+  draw();
+}
+
+// ---------- Navegación ----------
+function go(r) { if (location.hash !== '#' + r) location.hash = r; else render(); }
+function logout() {
+  S.session = null; store.del('session');
+  closeModal(true); closeDrawer();
+  toast('Sesión cerrada', 'Vuelve pronto.');
+  location.hash = 'login'; render();
+}
+window.addEventListener('hashchange', render);
+
+function render() {
+  closeDrawer();
+  let r = (location.hash || '').slice(1);
+  const root = $('#root');
+  if (!S.session) {
+    if (r !== 'registro') r = 'login';
+    S.route = r;
+    root.innerHTML = r === 'registro' ? viewRegister() : viewLogin();
+    bindAuth();
+    document.title = (r === 'registro' ? 'Registro' : 'Iniciar sesión') + ' · DataMark';
+    return;
+  }
+  const role = ROLES[S.session.role];
+  const allowed = [...role.nav.map(n => n[0]), 'configuracion'];
+  if (!allowed.includes(r)) { r = role.home; history.replaceState(null, '', '#' + r); }
+  S.route = r;
+  root.innerHTML = shell(r, VIEWS[r]());
+  document.title = PAGE_NAMES[r] + ' · DataMark';
+  $('#main').scrollTop = 0;
+  AFTER[r] && AFTER[r]();
+}
+
+function shell(r, content) {
+  const role = ROLES[S.session.role], u = S.session;
+  const unseen = !S.notifSeen && S.notifs.length;
+  return `<div class="app ${S.collapsed ? 'collapsed' : ''}" id="app">
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Abrir menú">${icon('menu')}</button>
+    <a class="logo" href="#${role.home}" aria-label="DataMark, inicio"><span class="logo-mark"><i></i><i></i></span><span>DataMark</span></a>
+    <button class="search-btn" id="search-btn" aria-label="Buscar (Ctrl+K)">${icon('search', 'sm')}<span>Buscar</span><kbd>Ctrl+K</kbd></button>
+    <div class="top-actions">
+      <button class="icon-btn hide-sm" id="help-btn" aria-label="Ayuda">${icon('help')}</button>
+      <button class="icon-btn" id="notif-btn" aria-label="Notificaciones" aria-expanded="false">${icon('bell')}<span class="pip" id="notif-pip" ${unseen ? '' : 'hidden'}></span></button>
+      <button class="avatar-btn" id="avatar-btn" aria-label="Menú del perfil" aria-expanded="false"><span class="avatar">${esc(u.ini)}</span></button>
+      <div class="pop" id="pop" hidden></div>
+    </div>
+  </header>
+  <div class="body">
+    <nav class="sidebar" id="sidebar" aria-label="Menú principal">
+      <div class="side-role"><span>${role.n}</span><button class="icon-btn collapse-btn" id="collapse-btn" style="width:28px;height:28px" aria-label="Colapsar menú">${icon('chevron', 'sm')}</button></div>
+      ${role.nav.map(([id, n, ic]) => `<a class="nav-item" href="#${id}" ${id === r ? 'aria-current="page"' : ''} title="${n}">${icon(ic)}<span>${n}</span></a>`).join('')}
+      <div class="side-spacer"></div>
+      <div class="side-bottom"><a class="nav-item" href="#configuracion" ${r === 'configuracion' ? 'aria-current="page"' : ''} title="Configuración">${icon('sliders')}<span>Configuración</span></a></div>
+    </nav>
+    <div class="side-scrim" id="side-scrim" hidden></div>
+    <main class="main" id="main" tabindex="-1">
+      <div class="crumbs"><span>${esc(u.empresa)}</span><span>/</span><span>${role.n}</span><span>/</span><b>${PAGE_NAMES[r]}</b></div>
+      ${content}
+    </main>
+  </div></div>`;
+}
+
+// ---------- Acceso: login y registro (R1-1, R1-2, R1-5) ----------
+function authSide() {
+  return `<div class="auth-side">
+    <a class="logo" href="#login"><span class="logo-mark"><i></i><i></i></span><span>DataMark</span></a>
+    <div class="stack" style="gap:16px">
+      <h1>Mira qué hace cada cliente y respóndele al instante.</h1>
+      <p>Centraliza los datos de tus canales de venta y comunicación, mide lo que funciona y activa correos, mensajes y notificaciones automáticamente según el comportamiento de cada cliente.</p>
+      <div class="card mini-feed" style="padding:18px">
+        <div><span class="live"><i></i>En vivo</span></div>
+        <div>${chDot('correo')} Laura abrió el correo «Oferta 24 h»</div>
+        <div>${chDot(null)} Camilo abandonó su carrito <span class="f-act" style="color:var(--primary)">→ correo enviado</span></div>
+        <div>${chDot('mensajeria')} Andrés respondió el mensaje «Bienvenida»</div>
+      </div>
+    </div>
+    <div class="muted small">Proyecto de Ingeniería de Software · Universidad de la Costa · 2026-2<br>Jonathan Molina · Orlando Hernández · Santiago Guerrero</div>
+  </div>`;
+}
+function viewLogin() {
+  return `<div class="auth">${authSide()}
+  <div class="auth-main"><form class="auth-form" id="login-form" novalidate>
+    <div><h2 style="font-size:24px">Iniciar sesión</h2><p class="muted" style="margin:6px 0 0">Entra con tu cuenta. El sistema te lleva al panel de tu rol.</p></div>
+    <div class="field"><label for="l-email">Correo</label><input class="input" id="l-email" type="email" autocomplete="username" placeholder="tu@empresa.co"><span class="err-msg" id="l-email-err"></span></div>
+    <div class="field"><label for="l-pass">Contraseña</label><input class="input" id="l-pass" type="password" autocomplete="current-password" placeholder="••••••••"><span class="err-msg" id="l-pass-err"></span></div>
+    <button class="btn primary" type="submit">Iniciar sesión</button>
+    <p class="muted small" style="margin:0;text-align:center">¿Tu empresa no tiene cuenta? <a href="#registro">Registra tu empresa</a></p>
+    <div style="border-top:1px solid var(--border);padding-top:16px" class="stack">
+      <div class="muted small" style="margin-bottom:-12px">Cuentas de demostración (contraseña <b style="color:var(--text)">${DEMO_PASS}</b>)</div>
+      <div class="demo-accs">
+        ${Object.entries(DEMO).map(([k, d]) => `<button type="button" class="demo-acc" data-demo="${k}"><span class="avatar">${d.ini}</span><span><b style="display:block;font-size:14px">${ROLES[k].n}</b><span class="muted xs">${d.email}</span></span>${icon('chevron', 'sm')}</button>`).join('')}
+      </div>
+    </div>
+  </form></div></div>`;
+}
+function viewRegister() {
+  return `<div class="auth">${authSide()}
+  <div class="auth-main"><form class="auth-form" id="reg-form" novalidate>
+    <div><h2 style="font-size:24px">Registra tu empresa</h2><p class="muted" style="margin:6px 0 0">Crea la cuenta de tu empresa. Tú quedas como Usuario Empresa.</p></div>
+    <div class="field"><label for="r-emp">Nombre de la empresa</label><input class="input" id="r-emp" placeholder="Ej. Café Arhuaco SAS"><span class="err-msg"></span></div>
+    <div class="field"><label for="r-nit">NIT</label><input class="input" id="r-nit" placeholder="900.000.000-0" inputmode="numeric"><span class="err-msg"></span></div>
+    <div class="field"><label for="r-name">Tu nombre</label><input class="input" id="r-name" autocomplete="name"><span class="err-msg"></span></div>
+    <div class="field"><label for="r-email">Correo</label><input class="input" id="r-email" type="email" autocomplete="email"><span class="err-msg"></span></div>
+    <div class="field"><label for="r-pass">Contraseña (mínimo 8 caracteres)</label><input class="input" id="r-pass" type="password" autocomplete="new-password"><span class="err-msg"></span></div>
+    <div class="field"><label for="r-plan">Plan</label><select class="input" id="r-plan">${PLANS.map(p => `<option>${p.n} · ${money(p.p)}/mes</option>`).join('')}</select></div>
+    <label class="check"><input type="checkbox" id="r-hd"><span>Autorizo el tratamiento de datos personales según la Ley 1581 de 2012 (Habeas Data).</span></label>
+    <span class="err-msg" id="r-hd-err"></span>
+    <button class="btn primary" type="submit">Crear cuenta</button>
+    <p class="muted small" style="margin:0;text-align:center">¿Ya tienes cuenta? <a href="#login">Inicia sesión</a></p>
+  </form></div></div>`;
+}
+function setErr(input, msg) {
+  input.classList.toggle('err', !!msg);
+  input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+  const e = input.parentElement.querySelector('.err-msg'); if (e) e.textContent = msg || '';
+}
+function bindAuth() {
+  const lf = $('#login-form');
+  if (lf) {
+    const em = $('#l-email'), pw = $('#l-pass');
+    em.onblur = () => setErr(em, em.value && !/^\S+@\S+\.\S+$/.test(em.value) ? 'Escribe un correo válido.' : '');
+    $$('[data-demo]').forEach(b => b.onclick = () => { em.value = DEMO[b.dataset.demo].email; pw.value = DEMO_PASS; setErr(em, ''); setErr(pw, ''); lf.requestSubmit(); });
+    lf.onsubmit = e => {
+      e.preventDefault();
+      let bad = false;
+      if (!/^\S+@\S+\.\S+$/.test(em.value)) { setErr(em, 'Escribe un correo válido.'); bad = true; } else setErr(em, '');
+      if (!pw.value) { setErr(pw, 'Escribe tu contraseña.'); bad = true; } else setErr(pw, '');
+      if (bad) return;
+      const role = Object.keys(DEMO).find(k => DEMO[k].email === em.value.trim().toLowerCase());
+      const reg = store.get('registered', []).find(x => x.email === em.value.trim().toLowerCase());
+      if ((role && pw.value === DEMO_PASS) || (reg && reg.pass === pw.value)) {
+        const d = role ? DEMO[role] : reg;
+        login(role || 'empresa', d);
+      } else {
+        toast('No pudimos iniciar sesión', 'El correo o la contraseña no coinciden. Revisa e intenta de nuevo.', false);
+        setErr(pw, 'Correo o contraseña incorrectos.');
+      }
+    };
+  }
+  const rf = $('#reg-form');
+  if (rf) {
+    rf.onsubmit = e => {
+      e.preventDefault();
+      const f = id => $('#' + id);
+      const checks = [
+        ['r-emp', v => v.trim().length >= 3 ? '' : 'Escribe el nombre de la empresa.'],
+        ['r-nit', v => /^[\d.]{6,}-?\d?$/.test(v.trim()) ? '' : 'Escribe un NIT válido, por ejemplo 900.123.456-7.'],
+        ['r-name', v => v.trim().length >= 3 ? '' : 'Escribe tu nombre.'],
+        ['r-email', v => /^\S+@\S+\.\S+$/.test(v) ? '' : 'Escribe un correo válido.'],
+        ['r-pass', v => v.length >= 8 ? '' : 'La contraseña debe tener al menos 8 caracteres.']
+      ];
+      let bad = false;
+      checks.forEach(([id, fn]) => { const m = fn(f(id).value); setErr(f(id), m); if (m) bad = true; });
+      $('#r-hd-err').textContent = f('r-hd').checked ? '' : 'Debes aceptar el tratamiento de datos para continuar.';
+      if (!f('r-hd').checked) bad = true;
+      if (bad) { toast('Revisa el formulario', 'Hay campos por completar.', false); return; }
+      const name = f('r-name').value.trim();
+      const d = { email: f('r-email').value.trim().toLowerCase(), pass: f('r-pass').value, name, ini: name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase(), empresa: f('r-emp').value.trim() };
+      const regs = store.get('registered', []); regs.push(d); store.set('registered', regs);
+      S.companies.push({ id: uid('emp'), name: d.empresa, nit: f('r-nit').value, plan: f('r-plan').value.split(' ·')[0], users: 1, status: 'ok', city: '—', since: 'nov 2026', events: 0 });
+      S.company = { ...S.company, name: d.empresa, nit: f('r-nit').value, email: d.email };
+      save('company');
+      toast('Empresa registrada', `Bienvenido a DataMark, ${name.split(' ')[0]}.`);
+      login('empresa', d, true);
+    };
+    $$('#reg-form .input').forEach(i => i.addEventListener('blur', () => { if (i.classList.contains('err')) rf.requestSubmit && null; }));
+  }
+}
+function login(role, d, silent) {
+  S.session = { role, name: d.name, ini: d.ini, email: d.email, empresa: d.empresa };
+  store.set('session', S.session); // R1-4: credenciales/sesión persistentes (en la versión final: JWT)
+  if (!silent) toast('Inicio de sesión exitoso', `Hola, ${d.name.split(' ')[0]}. Entraste como ${ROLES[role].n}.`);
+  location.hash = ROLES[role].home; render();
+}
+
+// ---------- Vistas ----------
+const head = (t, sub, actions = '') => `<div class="page-head"><div><h1 class="page-title">${t}</h1>${sub ? `<p class="page-sub">${sub}</p>` : ''}</div>${actions ? `<div class="row wrap">${actions}</div>` : ''}</div>`;
+const statusBadge = (s, txt) => `<span class="badge ${s}">${txt}</span>`;
+
+// ===== Inicio (Usuario Empresa / Analista) — RF13, RF14 =====
+function seriesNow() {
+  const sr = SERIES[S.range];
+  const keys = S.chFilter === 'todos' ? CHK : [S.chFilter];
+  const n = sr.labels.length;
+  const vals = [...Array(n)].map((_, i) => keys.reduce((a, k) => a + sr.data[k][i], 0));
+  return { vals, labels: sr.labels, tick: sr.tick };
+}
+function viewInicio() {
+  return `<div class="dash">
+    <div class="stack" style="min-width:0">
+      <section aria-labelledby="kpi-l">
+        <div class="row between wrap" style="align-items:flex-start">
+          <div>
+            <div class="kpi-label" id="kpi-l">Interacciones totales · <span id="kpi-ch">Todos los canales</span></div>
+            <div class="kpi"><span class="kpi-value num" id="kpi-v">0</span><span class="delta" id="kpi-d"></span></div>
+          </div>
+          <div class="chart-filters">
+            <div class="chips" role="group" aria-label="Rango">
+              ${[['hoy', 'Hoy'], ['d7', '7 días'], ['d30', '30 días']].map(([k, n]) => `<button class="chip" data-range="${k}" aria-pressed="${S.range === k}">${n}</button>`).join('')}
+            </div>
+            <label class="sr-only" for="ch-filter">Canal</label>
+            <select id="ch-filter"><option value="todos">Todos los canales</option>${CHK.map(k => `<option value="${k}" ${S.chFilter === k ? 'selected' : ''}>${CH[k].n}</option>`).join('')}</select>
+          </div>
+        </div>
+        <div class="chart-box" id="chart" role="img" aria-describedby="chart-sum"></div>
+        <div class="x-labels" id="x-labels" aria-hidden="true"></div>
+        <p class="sr-only" id="chart-sum"></p>
+      </section>
+      <section>
+        <h2 style="font-size:20px;font-weight:600;margin-bottom:16px">Objetos con más interacción (en vivo)</h2>
+        <div class="card"><div class="obj-list" id="obj-list"></div></div>
+      </section>
+    </div>
+    <div class="stack" style="min-width:0">
+      <section class="card">
+        <div class="card-head"><h2 class="card-title">Rendimiento por canal</h2><span class="muted xs">Hoy vs. ayer</span></div>
+        <div class="perf" id="perf"></div>
+      </section>
+      <section class="card">
+        <div class="card-head"><div class="row"><h2 class="card-title">Actividad en vivo</h2><span class="live ${S.paused ? 'paused' : ''}" id="live-ind"><i></i><span>${S.paused ? 'En pausa' : 'En vivo'}</span></span></div>
+          <button class="btn sm" id="pause-btn" aria-pressed="${S.paused}">${S.paused ? icon('play', 'sm') + 'Reanudar' : icon('pause', 'sm') + 'Pausar'}</button></div>
+        <button class="btn sm pending-bar" id="pending-btn" hidden></button>
+        <ul class="feed" id="feed" aria-live="polite" aria-label="Eventos recientes"></ul>
+      </section>
+    </div>
+  </div>`;
+}
+function drawChart() {
+  const box = $('#chart'); if (!box) return;
+  const { vals, labels, tick } = seriesNow();
+  const n = vals.length, max = Math.max(...vals) * 1.15, W = 1000, H = 280;
+  const x = i => i / (n - 1) * W, y = v => H - (v / max) * (H - 10);
+  const pts = vals.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+  box.innerHTML = `<svg class="area" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(130,170,255,0.28)"/><stop offset="1" stop-color="rgba(130,170,255,0)"/></linearGradient></defs>
+    <path d="M0,${H} L${pts.join(' L')} L${W},${H} Z" fill="url(#grad)"/>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="${S.chFilter === 'todos' ? '#CFE0FF' : CH[S.chFilter].c}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    <line x1="0" x2="${W}" y1="${H - .5}" y2="${H - .5}" stroke="#3a3a40" stroke-dasharray="2 6" vector-effect="non-scaling-stroke"/>
+  </svg><div class="chart-dot" id="c-dot" hidden></div><div class="chart-tip" id="c-tip" hidden></div>`;
+  const xl = $('#x-labels');
+  const ticks = [];
+  for (let i = 0; i < n - 1; i++) { if (tick(i) !== null) ticks.push(i); }
+  const maxTicks = box.clientWidth < 500 ? 3 : 6;
+  const step = Math.ceil(ticks.length / maxTicks);
+  xl.innerHTML = ticks.filter((_, j) => j % step === 0).filter(i => i < n - 3 || n < 8).map(i => `<span style="left:${i / (n - 1) * 100}%">${labels[i]}</span>`).join('') + `<span class="now" style="left:100%">${S.range === 'hoy' ? 'Ahora' : 'Hoy'}</span>`;
+  const total = vals.reduce((a, b) => a + b, 0), peak = vals.indexOf(Math.max(...vals));
+  $('#chart-sum').textContent = `Gráfica de interacciones, ${S.range === 'hoy' ? 'últimas 24 horas' : S.range === 'd7' ? 'últimos 7 días' : 'últimos 30 días'}: total ${fmt(total)}, pico de ${fmt(vals[peak])} en ${labels[peak]}.`;
+  // Tooltip
+  const show = clientX => {
+    const r = box.getBoundingClientRect();
+    const i = Math.max(0, Math.min(n - 1, Math.round((clientX - r.left) / r.width * (n - 1))));
+    const v = seriesNow().vals[i];
+    const px = i / (n - 1) * r.width, py = y(v) / H * r.height;
+    const dot = $('#c-dot'), tip = $('#c-tip');
+    dot.hidden = tip.hidden = false;
+    dot.style.left = px + 'px'; dot.style.top = py + 'px';
+    tip.style.left = Math.min(Math.max(px, 70), r.width - 70) + 'px'; tip.style.top = py + 'px';
+    tip.innerHTML = `<b class="num">${labels[i]} · ${fmt(v)} inter.</b><span class="muted">${S.chFilter === 'todos' ? 'Todos los canales' : CH[S.chFilter].n}</span>`;
+  };
+  box.onmousemove = e => show(e.clientX);
+  box.ontouchstart = box.ontouchmove = e => show(e.touches[0].clientX);
+  box.onmouseleave = () => { $('#c-dot').hidden = $('#c-tip').hidden = true; };
+}
+function drawKpi() {
+  const { vals } = seriesNow();
+  const total = vals.reduce((a, b) => a + b, 0);
+  let prev = PREV[S.range];
+  if (S.chFilter !== 'todos') prev = prev * ({ correo: .32, mensajeria: .26, push: .225, redes: .2 }[S.chFilter]);
+  const d = (total - prev) / prev * 100;
+  $('#kpi-v').textContent = fmt(total);
+  $('#kpi-ch').textContent = S.chFilter === 'todos' ? 'Todos los canales' : CH[S.chFilter].n;
+  const lbl = { hoy: 'frente a ayer', d7: 'frente a la semana anterior', d30: 'frente al mes anterior' }[S.range];
+  $('#kpi-d').className = 'delta ' + (d >= 0 ? 'up' : 'down');
+  $('#kpi-d').textContent = `${d >= 0 ? '▲ +' : '▼ −'}${fmt1(Math.abs(d))} % ${lbl}`;
+}
+function drawObjects() {
+  const el = $('#obj-list'); if (!el) return;
+  const objs = Object.values(OBJECTS).sort((a, b) => b.v - a.v).slice(0, 4);
+  const max = objs[0].v * 1.1;
+  el.innerHTML = objs.map(o => `<div class="obj"><span class="obj-ic">${chDot(o.ch)}</span><div style="min-width:0">
+    <div class="obj-top"><span>${esc(o.n)}</span><span class="num">${fmt(o.v)}</span></div>
+    <div class="bar" role="img" aria-label="${fmt(o.v)} interacciones"><i style="width:${o.v / max * 100}%;background:${CH[o.ch].c}"></i></div></div></div>`).join('');
+}
+function drawPerf() {
+  const el = $('#perf'); if (!el) return;
+  el.innerHTML = CHK.map(k => {
+    const v = SERIES.hoy.data[k].reduce((a, b) => a + b, 0), d = CH_DELTA[k];
+    return `<div class="perf-row">${chDot(k)}<span>${CH[k].n}</span><b class="num">${fmt(v)}</b><span class="num ${d >= 0 ? 'up' : 'down'}" style="text-align:right">${d >= 0 ? '+' : '−'}${Math.abs(d)} %</span></div>`;
+  }).join('');
+}
+function feedItem(e, isNew) {
+  const ic = e.canal ? CH[e.canal].ic : (e.evento === 'carrito' ? 'cart' : e.evento === 'formulario' ? 'form' : 'pay');
+  const act = e.accion ? ` <span class="${e.accion.ok ? 'f-act' : 'down'}">→ ${esc(e.accion.txt)}</span>` : '';
+  return `<li class="${isNew ? 'new' : ''}"><button data-contact="${e.contacto_id}"><span class="f-ic" style="color:${e.canal ? CH[e.canal].c : 'var(--text-muted)'}">${icon(ic)}</span>
+    <span style="min-width:0"><span class="f-txt" style="display:block">${esc(e.texto)}</span><span class="f-meta">${esc(e.fuente)} · <span data-ts="${e.ts}">${ago(e.ts)}</span>${act}</span></span></button></li>`;
+}
+let lastFeedTop = null;
+function drawFeed() {
+  const el = $('#feed'); if (!el) return;
+  const top = S.feed[0]?.id;
+  el.innerHTML = S.feed.map(e => feedItem(e, lastFeedTop && e.id === top && top !== lastFeedTop)).join('');
+  lastFeedTop = top;
+  const pb = $('#pending-btn');
+  pb.hidden = !S.pending.length;
+  pb.textContent = `${S.pending.length} evento${S.pending.length === 1 ? '' : 's'} nuevo${S.pending.length === 1 ? '' : 's'} en pausa · Mostrar`;
+}
+function updateLive(changed) {
+  if (changed) { drawKpi(); drawChartLight(); drawObjects(); drawPerf(); if (!S.paused) drawFeed(); else { const pb = $('#pending-btn'); if (pb) { pb.hidden = !S.pending.length; pb.textContent = `${S.pending.length} evento${S.pending.length === 1 ? '' : 's'} nuevo${S.pending.length === 1 ? '' : 's'} en pausa · Mostrar`; } } }
+  $$('[data-ts]').forEach(s => s.textContent = ago(+s.dataset.ts));
+}
+function drawChartLight() {
+  // Actualiza solo la forma de la gráfica sin perder el tooltip
+  const box = $('#chart'); if (!box) return;
+  const svg = $('svg', box); if (!svg) return drawChart();
+  const { vals } = seriesNow();
+  const n = vals.length, max = Math.max(...vals) * 1.15, W = 1000, H = 280;
+  const pts = vals.map((v, i) => `${(i / (n - 1) * W).toFixed(1)},${(H - (v / max) * (H - 10)).toFixed(1)}`);
+  $('path', svg).setAttribute('d', `M0,${H} L${pts.join(' L')} L${W},${H} Z`);
+  $('polyline', svg).setAttribute('points', pts.join(' '));
+}
+function afterInicio() {
+  drawKpi(); drawChart(); drawObjects(); drawPerf(); drawFeed();
+  $$('[data-range]').forEach(b => b.onclick = () => { S.range = b.dataset.range; $$('[data-range]').forEach(x => x.setAttribute('aria-pressed', x === b)); drawKpi(); drawChart(); });
+  $('#ch-filter').onchange = e => { S.chFilter = e.target.value; drawKpi(); drawChart(); };
+  $('#pause-btn').onclick = () => {
+    S.paused = !S.paused;
+    if (!S.paused && S.pending.length) { S.feed = [...S.pending, ...S.feed].slice(0, 50); S.pending = []; }
+    const b = $('#pause-btn'); b.setAttribute('aria-pressed', S.paused); b.innerHTML = S.paused ? icon('play', 'sm') + 'Reanudar' : icon('pause', 'sm') + 'Pausar';
+    const li = $('#live-ind'); li.classList.toggle('paused', S.paused); $('span', li).textContent = S.paused ? 'En pausa' : 'En vivo';
+    drawFeed();
+  };
+  $('#pending-btn').onclick = () => $('#pause-btn').click();
+  let rt; window.onresize = () => { clearTimeout(rt); rt = setTimeout(() => S.route === 'inicio' && drawChart(), 150); };
+}
+
+// ===== Canales (R2-1 a R2-5) =====
+function viewCanales() {
+  const st = { ok: ['ok', 'Conectado'], off: ['off', 'Sin conectar'], error: ['bad', 'Error'], pend: ['warn', 'Pendiente'] };
+  return head('Canales', 'Conecta tus redes sociales, formularios web y pasarelas de pago. Los eventos de cada canal llegan al panel en tiempo real.') +
+    `<div class="grid g3">${S.integ.map(i => `<div class="card stack" style="gap:16px">
+      <div class="row between"><div class="row"><span class="ic-box">${icon(i.ic)}</span><div><div style="font-weight:600">${esc(i.name)}</div><div class="muted xs">${i.type} · ${i.req}</div></div></div>${statusBadge(...st[i.status])}</div>
+      <div class="muted small" style="min-height:20px">${esc(i.detail)}</div>
+      <div class="row">${i.status === 'ok' ? `<button class="btn sm" data-disc="${i.id}">Desconectar</button>` : `<button class="btn sm primary" data-conn="${i.id}">${i.status === 'error' ? 'Reconectar' : 'Conectar'}</button>`}</div>
+    </div>`).join('')}</div>
+    <p class="hint" style="margin-top:24px">${icon('shield', 'sm')} Las credenciales se guardan cifradas (R2-4). Para la demo: un token de 8 o más caracteres conecta el canal; uno más corto simula una conexión fallida.</p>`;
+}
+function afterCanales() {
+  $$('[data-conn]').forEach(b => b.onclick = () => {
+    const i = S.integ.find(x => x.id === b.dataset.conn);
+    const m = openModal(`${modalHead('Conectar ' + esc(i.name), i.type)}
+      <div class="field"><label for="cred">${i.field}</label><input class="input" id="cred" autocomplete="off" placeholder="Pega aquí la credencial"><span class="err-msg"></span></div>
+      <div class="modal-actions"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="do-conn">Probar y conectar</button></div>`);
+    $('#do-conn', m).onclick = () => {
+      const v = $('#cred', m).value.trim();
+      if (!v) return setErr($('#cred', m), 'Este campo es obligatorio.');
+      const btn = $('#do-conn', m); btn.disabled = true; btn.textContent = 'Conectando…';
+      setTimeout(() => {
+        closeModal();
+        if (v.length >= 8) {
+          i.status = 'ok'; i.detail = 'Conectado hace un momento · ' + (i.type === 'Formulario' ? v : '…' + v.slice(-4));
+          save('integ'); toast('Canal conectado correctamente', `${i.name} ya envía eventos a DataMark.`); notify(`${i.name} conectado`, 'El canal está activo.');
+        } else {
+          i.status = 'error'; i.detail = 'Credencial rechazada por el proveedor';
+          save('integ'); toast('No pudimos conectar el canal', 'Revisa tus credenciales e intenta de nuevo.', false); notify(`Falló la conexión de ${i.name}`, 'Credencial rechazada.', true);
+        }
+        render();
+      }, 900);
+    };
+  });
+  $$('[data-disc]').forEach(b => b.onclick = () => {
+    const i = S.integ.find(x => x.id === b.dataset.disc);
+    confirmModal({ title: `¿Desconectar ${esc(i.name)}?`, text: 'Dejarás de recibir eventos de este canal y las automatizaciones que lo usan no se ejecutarán.', ok: 'Desconectar', onOk: () => { i.status = 'off'; i.detail = 'Sin conectar'; save('integ'); toast('Canal desconectado', i.name); render(); } });
+  });
+}
+
+// ===== Automatizaciones (RF18–RF22) =====
+function viewAutomatizaciones() {
+  return head('Automatizaciones', 'Cada regla escucha un evento (disparador) y ejecuta una acción en un canal. Se evalúan en tiempo real sobre los eventos que llegan.', `<button class="btn primary" id="new-rule">${icon('plus', 'sm')}Crear automatización</button>`) +
+    `<div class="stack" style="gap:16px">${S.rules.length ? S.rules.map(r => `<div class="card rule">
+      <div style="min-width:0">
+        <div class="row wrap" style="gap:10px"><b style="font-size:16px">${esc(r.name)}</b>${r.on ? statusBadge('ok', 'Activa') : statusBadge('off', 'En pausa')}<span class="muted xs num">${fmt(r.runs)} ejecuciones</span></div>
+        <div class="flow"><span class="pill">${icon(TRIGGERS[r.trig].ic, 'sm')} ${TRIGGERS[r.trig].n}</span><span class="arrow">→</span><span class="pill">${chDot(r.ch)} ${ACTIONS[r.ch]}</span><span class="muted xs">${esc(r.wait)}</span></div>
+        <div class="muted small" style="margin-top:8px">«${esc(r.tpl)}»</div>
+      </div>
+      <div class="row">
+        <button class="switch" role="switch" aria-checked="${r.on}" aria-label="Activar ${esc(r.name)}" data-toggle="${r.id}"></button>
+        <button class="icon-btn" data-edit="${r.id}" aria-label="Editar ${esc(r.name)}">${icon('pencil')}</button>
+        <button class="icon-btn" data-del="${r.id}" aria-label="Eliminar ${esc(r.name)}" style="color:#ff7a7a">${icon('trash')}</button>
+      </div></div>`).join('') : `<div class="card empty">${icon('zap')}<span>Todavía no tienes automatizaciones.</span><button class="btn primary" onclick="ruleWizard()">Crear la primera</button></div>`}</div>`;
+}
+function afterAutomatizaciones() {
+  $('#new-rule').onclick = () => ruleWizard();
+  $$('[data-edit]').forEach(b => b.onclick = () => ruleWizard(S.rules.find(r => r.id === b.dataset.edit)));
+  $$('[data-toggle]').forEach(b => b.onclick = () => {
+    const r = S.rules.find(x => x.id === b.dataset.toggle); r.on = !r.on; save('rules');
+    toast(r.on ? 'Automatización activada' : 'Automatización en pausa', r.name); render();
+  });
+  $$('[data-del]').forEach(b => b.onclick = () => {
+    const r = S.rules.find(x => x.id === b.dataset.del);
+    confirmModal({ title: '¿Eliminar esta automatización?', text: `Se eliminará «${esc(r.name)}». Esta acción no se puede deshacer.`, onOk: () => { S.rules = S.rules.filter(x => x !== r); save('rules'); toast('Automatización eliminada', r.name); render(); } });
+  });
+}
+function ruleWizard(edit) {
+  const d = edit ? { ...edit } : { name: '', trig: 'carrito', ch: 'correo', tpl: '', wait: 'Inmediato', on: true };
+  let step = 0;
+  const draw = () => {
+    const body = [
+      `<div class="field"><span class="muted small" style="font-weight:500">¿Qué evento activa la regla?</span><div class="stack" style="gap:8px;margin-top:6px">${Object.entries(TRIGGERS).map(([k, t]) => `<label class="demo-acc" style="grid-template-columns:auto auto minmax(0,1fr);cursor:pointer"><input type="radio" name="trig" value="${k}" ${d.trig === k ? 'checked' : ''} style="accent-color:var(--primary-600)"><span class="ic-box" style="width:32px;height:32px">${icon(t.ic, 'sm')}</span><span><b style="display:block;font-size:14px">${t.n}</b><span class="muted xs">Origen: ${t.src}</span></span></label>`).join('')}</div></div>`,
+      `<div class="field"><label for="w-ch">Canal de la acción</label><select class="input" id="w-ch">${CHK.map(k => `<option value="${k}" ${d.ch === k ? 'selected' : ''}>${ACTIONS[k]}</option>`).join('')}</select></div>
+       <div class="field"><label for="w-tpl">Mensaje</label><textarea class="input" id="w-tpl" placeholder="Ej. ¡Tu carrito te espera! Usa el código VUELVE10">${esc(d.tpl)}</textarea><span class="err-msg"></span></div>
+       <div class="field"><label for="w-wait">Cuándo enviarlo</label><select class="input" id="w-wait">${['Inmediato', '5 min', '1 hora', '1 día'].map(w => `<option ${d.wait === w ? 'selected' : ''}>${w}</option>`).join('')}</select></div>`,
+      `<div class="field"><label for="w-name">Nombre de la automatización</label><input class="input" id="w-name" value="${esc(d.name)}" placeholder="Ej. Recuperar carritos"><span class="err-msg"></span></div>
+       <div class="card" style="padding:16px;background:var(--bg)"><div class="muted xs" style="margin-bottom:8px">RESUMEN</div><div class="flow" style="margin:0"><span class="pill">${icon(TRIGGERS[d.trig].ic, 'sm')} ${TRIGGERS[d.trig].n}</span><span class="arrow">→</span><span class="pill">${chDot(d.ch)} ${ACTIONS[d.ch]}</span><span class="muted xs">${esc(d.wait)}</span></div><div class="muted small" style="margin-top:10px">«${esc(d.tpl)}»</div></div>
+       <label class="check"><input type="checkbox" id="w-on" ${d.on ? 'checked' : ''}><span>Activarla al guardar</span></label>`
+    ][step];
+    const m = openModal(`${modalHead(edit ? 'Editar automatización' : 'Crear automatización', `Paso ${step + 1} de 3 · ${['Disparador', 'Acción', 'Revisar y guardar'][step]}`)}
+      <div class="steps" aria-hidden="true">${[0, 1, 2].map(i => `<span class="${i <= step ? 'on' : ''}"></span>`).join('')}</div>
+      ${body}
+      <div class="modal-actions">${step ? '<button class="btn" id="w-back">Atrás</button>' : '<button class="btn" data-close>Cancelar</button>'}<button class="btn primary" id="w-next">${step < 2 ? 'Siguiente' : edit ? 'Guardar cambios' : 'Guardar automatización'}</button></div>`, 'wide');
+    const collect = () => {
+      if (step === 0) d.trig = $('input[name=trig]:checked', m).value;
+      if (step === 1) { d.ch = $('#w-ch', m).value; d.tpl = $('#w-tpl', m).value.trim(); d.wait = $('#w-wait', m).value; }
+      if (step === 2) { d.name = $('#w-name', m).value.trim(); d.on = $('#w-on', m).checked; }
+    };
+    if ($('#w-back', m)) $('#w-back', m).onclick = () => { collect(); step--; draw(); };
+    $('#w-next', m).onclick = () => {
+      collect();
+      if (step === 1 && !d.tpl) return setErr($('#w-tpl', m), 'Escribe el mensaje que recibirá el cliente.');
+      if (step === 2 && !d.name) return setErr($('#w-name', m), 'Ponle un nombre para encontrarla fácil.');
+      if (step < 2) { step++; return draw(); }
+      if (edit) { Object.assign(S.rules.find(r => r.id === edit.id), d); toast('Automatización actualizada', d.name); }
+      else { S.rules.unshift({ ...d, id: uid('r'), runs: 0 }); toast('Automatización creada', `${d.name} ${d.on ? 'ya está activa' : 'quedó en pausa'}.`); }
+      save('rules'); closeModal(); if (S.route === 'automatizaciones') render(); else go('automatizaciones');
+    };
+  };
+  draw();
+}
+window.ruleWizard = ruleWizard;
+
+// ===== Contactos =====
+let contactFilter = { q: '', seg: 'Todos' };
+function viewContactos() {
+  const segs = ['Todos', ...new Set(CONTACTS.map(c => c.seg))];
+  return head('Contactos', 'Tu base de clientes con su canal preferido y su actividad. Haz clic en un contacto para ver su historial.') +
+    `<div class="card"><div class="card-head"><div class="chips">${segs.map(s => `<button class="chip" data-seg="${s}" aria-pressed="${contactFilter.seg === s}">${s}</button>`).join('')}</div>
+      <div style="width:min(280px,100%)"><label class="sr-only" for="c-q">Buscar contacto</label><input class="input" id="c-q" placeholder="Buscar por nombre o ciudad" value="${esc(contactFilter.q)}"></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Contacto</th><th>Ciudad</th><th>Segmento</th><th>Canal preferido</th><th class="r">Interacciones</th></tr></thead><tbody id="c-body"></tbody></table></div></div>`;
+}
+function afterContactos() {
+  const draw = () => {
+    const q = contactFilter.q.toLowerCase();
+    const rows = CONTACTS.filter(c => (contactFilter.seg === 'Todos' || c.seg === contactFilter.seg) && (c.name.toLowerCase().includes(q) || c.city.toLowerCase().includes(q)));
+    $('#c-body').innerHTML = rows.length ? rows.map(c => `<tr class="click" data-contact="${c.id}" tabindex="0"><td><div class="row"><span class="avatar">${c.name.split(' ').map(p => p[0]).join('')}</span><div><b>${esc(c.name)}</b><div class="muted xs">${esc(c.email)}</div></div></div></td><td>${c.city}</td><td>${c.seg}</td><td><span class="row" style="gap:8px">${chDot(c.pref)}${CH[c.pref].s}</span></td><td class="r num">${fmt(c.inter)}</td></tr>`).join('') : `<tr><td colspan="5"><div class="empty">No hay contactos con ese filtro.</div></td></tr>`;
+  };
+  draw();
+  $('#c-q').oninput = e => { contactFilter.q = e.target.value; draw(); };
+  $$('[data-seg]').forEach(b => b.onclick = () => { contactFilter.seg = b.dataset.seg; $$('[data-seg]').forEach(x => x.setAttribute('aria-pressed', x === b)); draw(); });
+}
+
+// ===== Reportes / Campañas (RF22) =====
+function campaignsTable(canRun) {
+  return `<div class="table-wrap"><table><thead><tr><th>Campaña</th><th>Canal</th><th class="r">Enviados</th><th class="r">Entregados</th><th class="r">Apertura</th><th class="r">Conversión</th><th>Estado</th>${canRun ? '<th></th>' : ''}</tr></thead><tbody>
+    ${S.campaigns.map(c => `<tr><td><b>${esc(c.name)}</b>${c.reason ? `<div class="down xs">${esc(c.reason)}</div>` : ''}</td><td><span class="row" style="gap:8px">${chDot(c.ch)}${CH[c.ch].s}</span></td><td class="r num">${fmt(c.sent)}</td><td class="r num">${fmt(c.deliv)}</td><td class="r num">${fmt1(c.open * 100)} %</td><td class="r num">${fmt1(c.conv * 100)} %</td>
+    <td>${c.status === 'ok' ? statusBadge('ok', 'Exitosa') : c.status === 'bad' ? statusBadge('bad', 'Fallida') : statusBadge('warn', 'Parcial')}</td>${canRun ? `<td class="r"><button class="btn sm" data-run="${c.id}">${icon('send', 'sm')}Ejecutar</button></td>` : ''}</tr>`).join('')}
+  </tbody></table></div>`;
+}
+function campaignStats() {
+  const sent = S.campaigns.reduce((a, c) => a + c.sent, 0), deliv = S.campaigns.reduce((a, c) => a + c.deliv, 0);
+  const ok = S.campaigns.filter(c => c.status === 'ok').length;
+  return `<div class="grid g4" style="margin-bottom:24px">
+    <div class="card stat"><span class="l">Mensajes enviados (30 días)</span><span class="v num">${fmt(sent)}</span></div>
+    <div class="card stat"><span class="l">Tasa de entrega</span><span class="v num">${fmt1(deliv / sent * 100)} %</span></div>
+    <div class="card stat"><span class="l">Campañas exitosas</span><span class="v num">${ok} de ${S.campaigns.length}</span></div>
+    <div class="card stat"><span class="l">Ingresos atribuidos</span><span class="v num">${money(18420000)}</span></div></div>`;
+}
+function viewReportes() {
+  return head('Reportes', 'Resultados de tus campañas multicanal. Ejecuta una campaña para ver el aviso de éxito o fallo.') + campaignStats() +
+    `<div class="card"><div class="card-head"><h2 class="card-title">Resultados de campañas</h2></div>${campaignsTable(true)}</div>`;
+}
+function afterReportes() {
+  $$('[data-run]').forEach(b => b.onclick = () => {
+    const c = S.campaigns.find(x => x.id === b.dataset.run);
+    b.disabled = true; b.textContent = 'Ejecutando…';
+    setTimeout(() => {
+      const integ = c.integ && S.integ.find(i => i.id === c.integ);
+      if (integ && integ.status !== 'ok') {
+        c.status = 'bad'; c.reason = `${integ.name}: ${integ.status === 'error' ? 'credencial vencida' : 'canal sin conectar'}`;
+        toast('La campaña no se pudo ejecutar', `${c.name}: reconecta ${integ.name} en Canales.`, false);
+        notify(`Campaña «${c.name}» falló`, c.reason, true);
+      } else {
+        const n = 150 + Math.floor(Math.random() * 400);
+        c.sent += n; c.deliv += Math.round(n * .97); c.status = 'ok'; c.reason = '';
+        toast('Campaña ejecutada', `${c.name}: ${fmt(Math.round(n * .97))} mensajes entregados.`);
+        notify(`Campaña «${c.name}» ejecutada`, `${fmt(n)} envíos`);
+      }
+      render();
+    }, 1100);
+  });
+}
+const viewCampanas = () => head('Campañas', 'Resultados de las campañas que ejecuta el equipo. Úsalos para ajustar tus segmentos.') + campaignStats() + `<div class="card"><div class="card-head"><h2 class="card-title">Resultados de campañas</h2></div>${campaignsTable(false)}</div>`;
+
+// ===== Analítica por canal (RF13) =====
+function channelMetrics() {
+  const base = { correo: [2.4, .014, 6.9], mensajeria: [1.6, .021, 4.8], push: [3.1, .008, 3.1], redes: [4.2, .005, 3.6] };
+  return CHK.map(k => {
+    const inter = SERIES.d30.data[k].reduce((a, b) => a + b, 0);
+    const [f, cr, rev] = base[k];
+    const traf = Math.round(inter * f);
+    return { k, traf, inter, conv: Math.round(traf * cr), cr, rev: rev * 1e6 };
+  });
+}
+function viewAnalitica() {
+  const m = channelMetrics();
+  const maxCr = Math.max(...m.map(x => x.cr));
+  return head('Analítica por canal', 'Tráfico, conversión y rendimiento de cada canal en los últimos 30 días.') +
+    `<div class="grid g4" style="margin-bottom:24px">${m.map(x => `<div class="card stat"><span class="row" style="gap:8px">${chDot(x.k)}<span class="l">${CH[x.k].n}</span></span><span class="v num">${fmt1(x.cr * 100)} %</span><span class="l">conversión · ${fmt(x.conv)} ventas</span></div>`).join('')}</div>
+    <div class="grid g2">
+      <div class="card"><div class="card-head"><h2 class="card-title">Métricas por canal</h2><span class="muted xs">30 días</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Canal</th><th class="r">Tráfico</th><th class="r">Interacciones</th><th class="r">Conversiones</th><th class="r">Ingresos</th></tr></thead><tbody>
+        ${m.map(x => `<tr><td><span class="row" style="gap:8px">${chDot(x.k)}${CH[x.k].s}</span></td><td class="r num">${fmt(x.traf)}</td><td class="r num">${fmt(x.inter)}</td><td class="r num">${fmt(x.conv)}</td><td class="r num">${money(x.rev)}</td></tr>`).join('')}
+        </tbody></table></div></div>
+      <div class="card"><div class="card-head"><h2 class="card-title">Tasa de conversión</h2><span class="muted xs">ventas ÷ tráfico</span></div>
+        <div class="obj-list">${m.slice().sort((a, b) => b.cr - a.cr).map(x => `<div><div class="obj-top"><span class="row" style="gap:8px">${chDot(x.k)}${CH[x.k].n}</span><span class="num">${fmt1(x.cr * 100)} %</span></div><div class="bar"><i style="width:${x.cr / maxCr * 100}%;background:${CH[x.k].c}"></i></div></div>`).join('')}</div>
+        <p class="muted small" style="margin:20px 0 0">La mensajería convierte más aunque tiene menos tráfico: conviene usarla para el segmento VIP y los carritos abandonados.</p></div>
+    </div>`;
+}
+
+// ===== Segmentación =====
+function viewSegmentacion() {
+  return head('Segmentación', 'Grupos de clientes que usan las campañas y automatizaciones. Ajusta el criterio y el tamaño se recalcula.', `<button class="btn primary" id="new-seg">${icon('plus', 'sm')}Nuevo segmento</button>`) +
+    `<div class="grid g3">${S.segments.map(s => `<div class="card stack" style="gap:12px"><div class="row between"><b style="font-size:16px">${esc(s.name)}</b><button class="icon-btn" data-eseg="${s.id}" aria-label="Editar ${esc(s.name)}">${icon('pencil')}</button></div>
+      <div class="muted small">${esc(s.crit)}</div><div class="row" style="align-items:baseline;gap:8px"><span class="num" style="font-size:28px;font-weight:700">${fmt(s.size)}</span><span class="muted small">contactos</span></div></div>`).join('')}</div>`;
+}
+function segModal(s) {
+  const d = s ? { ...s } : { name: '', crit: '' };
+  const m = openModal(`${modalHead(s ? 'Ajustar segmento' : 'Nuevo segmento')}
+    <div class="field"><label for="sg-n">Nombre</label><input class="input" id="sg-n" value="${esc(d.name)}"><span class="err-msg"></span></div>
+    <div class="field"><label for="sg-c">Criterio</label><input class="input" id="sg-c" value="${esc(d.crit)}" placeholder="Ej. Abrió 3 o más correos en 30 días"><span class="err-msg"></span></div>
+    <div class="modal-actions"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="sg-ok">Guardar</button></div>`);
+  $('#sg-ok', m).onclick = () => {
+    const n = $('#sg-n', m).value.trim(), c = $('#sg-c', m).value.trim();
+    if (!n) return setErr($('#sg-n', m), 'Escribe un nombre.');
+    if (!c) return setErr($('#sg-c', m), 'Describe quién entra en el segmento.');
+    const size = 80 + (c.length * 37 + n.length * 11) % 1400;
+    if (s) Object.assign(S.segments.find(x => x.id === s.id), { name: n, crit: c, size });
+    else S.segments.push({ id: uid('s'), name: n, crit: c, size });
+    save('segments'); closeModal(); toast('Segmento guardado', `${n}: ${fmt(size)} contactos.`); render();
+  };
+}
+function afterSegmentacion() {
+  $('#new-seg').onclick = () => segModal();
+  $$('[data-eseg]').forEach(b => b.onclick = () => segModal(S.segments.find(s => s.id === b.dataset.eseg)));
+}
+
+// ===== Exportar reportes (RF15, RF17) =====
+function viewExportar() {
+  return head('Reportes', 'Genera reportes de métricas en PDF o Excel para compartir con tu equipo.') +
+    `<div class="grid g2" style="align-items:start">
+    <form class="card stack" id="rep-form" style="gap:16px" novalidate>
+      <h2 class="card-title">Nuevo reporte</h2>
+      <div class="field"><label for="rp-t">Tipo de reporte</label><select class="input" id="rp-t"><option>Rendimiento por canal</option><option>Resultados de campañas</option><option>Contactos por segmento</option></select></div>
+      <div class="field"><label for="rp-r">Periodo</label><select class="input" id="rp-r"><option>Últimos 7 días</option><option selected>Últimos 30 días</option><option>Noviembre 2026</option></select></div>
+      <fieldset class="field" style="border:none;padding:0;margin:0"><legend class="muted small" style="font-weight:500;margin-bottom:6px">Formato</legend>
+        <div class="chips"><label class="chip" style="display:inline-flex;align-items:center;gap:6px"><input type="radio" name="fmt" value="PDF" checked> PDF</label><label class="chip" style="display:inline-flex;align-items:center;gap:6px"><input type="radio" name="fmt" value="Excel"> Excel</label></div></fieldset>
+      <fieldset class="field" style="border:none;padding:0;margin:0"><legend class="muted small" style="font-weight:500;margin-bottom:6px">Métricas a incluir</legend>
+        ${['Tráfico', 'Interacciones', 'Conversiones', 'Ingresos'].map(x => `<label class="check"><input type="checkbox" name="met" value="${x}" checked><span>${x}</span></label>`).join('')}
+        <span class="err-msg" id="met-err"></span></fieldset>
+      <button class="btn primary" type="submit">${icon('download', 'sm')}Generar reporte</button>
+    </form>
+    <div class="card"><div class="card-head"><h2 class="card-title">Reportes generados</h2></div>
+      ${S.reports.length ? `<div class="stack" style="gap:0">${S.reports.map((r, i) => `<div class="svc"><div class="row"><span class="ic-box">${icon('file')}</span><div style="min-width:0"><b style="word-break:break-all">${esc(r.file)}</b><div class="muted xs">${r.when}</div></div></div><button class="btn sm" data-prev="${i}">Ver</button></div>`).join('')}</div>` : `<div class="empty">${icon('file')}<span>Aún no has generado reportes en esta sesión.</span></div>`}
+    </div></div>`;
+}
+function reportPreview(r) {
+  const m = channelMetrics();
+  const cols = r.met;
+  const val = (x, c) => c === 'Tráfico' ? fmt(x.traf) : c === 'Interacciones' ? fmt(x.inter) : c === 'Conversiones' ? fmt(x.conv) : money(x.rev);
+  const csv = ['Canal;' + cols.join(';'), ...m.map(x => CH[x.k].n + ';' + cols.map(c => val(x, c)).join(';'))].join('\n');
+  const mm = openModal(`${modalHead(esc(r.file), `${r.type} · ${r.range} · ${r.fmt}`)}
+    <div class="card" style="background:var(--bg);padding:16px;font-size:13px"><div class="row between" style="margin-bottom:12px"><span class="logo" style="font-size:16px"><span class="logo-mark" style="transform:scale(.8)"><i></i><i></i></span>DataMark</span><span class="muted xs">${esc(S.company.name)}</span></div>
+    <div class="table-wrap" style="margin:0;padding:0"><table style="font-size:13px"><thead><tr><th>Canal</th>${cols.map(c => `<th class="r">${c}</th>`).join('')}</tr></thead><tbody>${m.map(x => `<tr><td>${CH[x.k].n}</td>${cols.map(c => `<td class="r num">${val(x, c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>
+    <p class="muted small" style="margin:0">En la versión con backend, el módulo de Reportes descarga el archivo ${r.fmt}. Aquí puedes copiar los datos para pegarlos en Excel.</p>
+    <div class="modal-actions"><button class="btn" data-close>Cerrar</button><button class="btn primary" id="copy-csv">${icon('copy', 'sm')}Copiar datos</button></div>`, 'wide');
+  $('#copy-csv', mm).onclick = () => {
+    navigator.clipboard?.writeText(csv).then(() => toast('Datos copiados', 'Pégalos en Excel o Google Sheets.'), () => toast('No se pudo copiar', 'Tu navegador bloqueó el portapapeles.', false));
+  };
+}
+function afterExportar() {
+  $('#rep-form').onsubmit = e => {
+    e.preventDefault();
+    const met = $$('input[name=met]:checked').map(i => i.value);
+    if (!met.length) { $('#met-err').textContent = 'Elige al menos una métrica.'; toast('No se pudo generar el reporte', 'Elige al menos una métrica para incluir.', false); return; }
+    const t = $('#rp-t').value, f = $('input[name=fmt]:checked').value;
+    const file = `${t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ /g, '-')}-nov-2026.${f === 'PDF' ? 'pdf' : 'xlsx'}`;
+    const r = { file, type: t, range: $('#rp-r').value, fmt: f, met, when: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) };
+    S.reports.unshift(r);
+    toast('Reporte generado', file); notify('Reporte generado', file);
+    render(); reportPreview(r);
+  };
+  $$('[data-prev]').forEach(b => b.onclick = () => reportPreview(S.reports[+b.dataset.prev]));
+}
+
+// ===== SuperAdmin =====
+function viewAdmin() {
+  const mrr = S.companies.reduce((a, c) => a + (PLANS.find(p => p.n === c.plan)?.p || 0), 0);
+  return head('Estado general de la plataforma', 'Resumen de empresas, usuarios, ingresos y salud de los servicios.') +
+    `<div class="grid g4" style="margin-bottom:24px">
+      <div class="card stat"><span class="l">Empresas clientes</span><span class="v num">${S.companies.length}</span><span class="l up">+2 este mes</span></div>
+      <div class="card stat"><span class="l">Usuarios</span><span class="v num">${S.users.length}</span><span class="l">en ${S.companies.length} empresas</span></div>
+      <div class="card stat"><span class="l">Ingreso mensual recurrente</span><span class="v num">${money(mrr)}</span><span class="l up">▲ +18 % frente a octubre</span></div>
+      <div class="card stat"><span class="l">Disponibilidad (30 días)</span><span class="v num">99,94 %</span><span class="l">objetivo 99 %</span></div>
+    </div>
+    <div class="grid g2" style="align-items:start">
+      <div class="card"><div class="card-head"><h2 class="card-title">Salud de los servicios</h2><a href="#monitoreo" class="small">Ver monitoreo</a></div>${SERVICES.map(s => `<div class="svc"><span>${s.n}</span>${s.st === 'ok' ? statusBadge('ok', 'Operativo') : statusBadge('warn', 'Degradado')}</div>`).join('')}</div>
+      <div class="card"><div class="card-head"><h2 class="card-title">Empresas recientes</h2><a href="#empresas" class="small">Ver todas</a></div>
+        ${S.companies.slice().reverse().slice(0, 5).map(c => `<div class="svc"><div class="row"><span class="ic-box">${icon('building')}</span><div><b>${esc(c.name)}</b><div class="muted xs">Plan ${c.plan} · desde ${c.since}</div></div></div>${companyBadge(c.status)}</div>`).join('')}</div>
+    </div>`;
+}
+const companyBadge = s => s === 'ok' ? statusBadge('ok', 'Activa') : s === 'warn' ? statusBadge('warn', 'Pago pendiente') : statusBadge('bad', 'Suspendida');
+function viewEmpresas() {
+  return head('Empresas', 'Empresas clientes de DataMark. Cada una ve solo sus propios datos (multi-tenant).') +
+    `<div class="card"><div class="table-wrap"><table><thead><tr><th>Empresa</th><th>NIT</th><th>Ciudad</th><th>Plan</th><th class="r">Usuarios</th><th class="r">Eventos hoy</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${S.companies.map(c => `<tr><td><b>${esc(c.name)}</b><div class="muted xs">${c.id}</div></td><td class="num">${c.nit}</td><td>${c.city}</td><td>${c.plan}</td><td class="r num">${S.users.filter(u => u.emp === c.id).length}</td><td class="r num">${fmt(c.events)}</td><td>${companyBadge(c.status)}</td><td class="r"><button class="btn sm" data-users="${c.id}">Ver usuarios</button></td></tr>`).join('')}
+    </tbody></table></div></div>`;
+}
+let userEmp = 'emp_123';
+function afterEmpresas() { $$('[data-users]').forEach(b => b.onclick = () => { userEmp = b.dataset.users; go('usuarios'); }); }
+function viewUsuarios() {
+  return head('Usuarios y permisos', 'Consulta los usuarios de una empresa, cambia su rol o permisos, o elimínalos.') +
+    `<div class="card"><div class="card-head"><div class="field" style="width:min(320px,100%)"><label for="u-emp">Empresa</label><select class="input" id="u-emp">${S.companies.map(c => `<option value="${c.id}" ${c.id === userEmp ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Usuario</th><th>Rol</th><th>Permisos</th><th>Último acceso</th><th></th></tr></thead><tbody id="u-body"></tbody></table></div></div>`;
+}
+function afterUsuarios() {
+  const draw = () => {
+    const rows = S.users.filter(u => u.emp === userEmp);
+    $('#u-body').innerHTML = rows.length ? rows.map(u => `<tr><td><div class="row"><span class="avatar">${u.name.split(' ').map(p => p[0]).join('')}</span><div><b>${esc(u.name)}</b><div class="muted xs">${esc(u.email)}</div></div></div></td>
+      <td><label class="sr-only" for="role-${u.id}">Rol de ${esc(u.name)}</label><select class="input" id="role-${u.id}" data-role="${u.id}" style="height:34px;width:auto">${Object.keys(ROLE_PERMS).map(r => `<option ${u.role === r ? 'selected' : ''}>${r}</option>`).join('')}</select></td>
+      <td class="muted small">${u.perms.length} de ${PERMS.length}</td><td class="muted small">${u.last}</td>
+      <td class="r" style="white-space:nowrap"><button class="btn sm" data-perm="${u.id}">Permisos</button> <button class="icon-btn" data-udel="${u.id}" aria-label="Eliminar a ${esc(u.name)}" style="color:#ff7a7a">${icon('trash')}</button></td></tr>`).join('')
+      : `<tr><td colspan="5"><div class="empty">Esta empresa no tiene usuarios.</div></td></tr>`;
+    $$('[data-role]').forEach(s => s.onchange = () => { const u = S.users.find(x => x.id === s.dataset.role); u.role = s.value; u.perms = ROLE_PERMS[s.value].slice(); save('users'); toast('Rol actualizado', `${u.name} ahora es ${u.role}.`); draw(); });
+    $$('[data-perm]').forEach(b => b.onclick = () => {
+      const u = S.users.find(x => x.id === b.dataset.perm);
+      const m = openModal(`${modalHead('Permisos de ' + esc(u.name), u.role)}<div class="stack" style="gap:12px">${PERMS.map((p, i) => `<label class="check"><input type="checkbox" value="${i}" ${u.perms.includes(i) ? 'checked' : ''}><span>${p}</span></label>`).join('')}</div>
+        <div class="modal-actions"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="p-ok">Guardar permisos</button></div>`);
+      $('#p-ok', m).onclick = () => { u.perms = $$('input:checked', m).map(i => +i.value); save('users'); closeModal(); toast('Permisos actualizados', u.name); draw(); };
+    });
+    $$('[data-udel]').forEach(b => b.onclick = () => {
+      const u = S.users.find(x => x.id === b.dataset.udel);
+      confirmModal({ title: '¿Eliminar este usuario?', text: `${esc(u.name)} perderá el acceso a DataMark. Esta acción no se puede deshacer.`, onOk: () => { S.users = S.users.filter(x => x !== u); save('users'); toast('Usuario eliminado', u.name); draw(); } });
+    });
+  };
+  $('#u-emp').onchange = e => { userEmp = e.target.value; draw(); toast('Usuarios consultados', S.companies.find(c => c.id === userEmp).name); };
+  draw();
+}
+function viewSuscripciones() {
+  return head('Suscripciones y facturación', 'Planes disponibles y facturas de las empresas clientes. Valores en pesos colombianos.') +
+    `<div class="grid g3" style="margin-bottom:24px">${PLANS.map(p => `<div class="card plan"><div class="row between"><b style="font-size:18px">${p.n}</b><span class="muted small">${S.companies.filter(c => c.plan === p.n).length} empresas</span></div><div class="price num">${money(p.p)}<span class="muted small" style="font-weight:400"> /mes</span></div><ul>${p.f.map(f => `<li>${f}</li>`).join('')}</ul></div>`).join('')}</div>
+    <div class="card"><div class="card-head"><h2 class="card-title">Facturas</h2></div><div class="table-wrap"><table><thead><tr><th>Factura</th><th>Empresa</th><th>Plan</th><th class="r">Valor</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>
+    ${INVOICES.map(([n, e, p, v, s, f]) => `<tr><td class="num">${n}</td><td>${e}</td><td>${p}</td><td class="r num">${money(v)}</td><td>${f}</td><td>${s === 'Pagada' ? statusBadge('ok', s) : s === 'Pendiente' ? statusBadge('warn', s) : statusBadge('bad', s)}</td></tr>`).join('')}
+    </tbody></table></div></div>`;
+}
+let monQueue = 12, monEpm = 412;
+function viewMonitoreo() {
+  return head('Monitoreo', 'Salud de los servicios del backend. Se actualiza cada segundo.') +
+    `<div class="grid g4" style="margin-bottom:24px">
+      <div class="card stat"><span class="l">Eventos por minuto</span><span class="v num" id="m-epm">${fmt(monEpm)}</span></div>
+      <div class="card stat"><span class="l">En cola de eventos</span><span class="v num" id="m-q">${monQueue}</span></div>
+      <div class="card stat"><span class="l">Usuarios conectados</span><span class="v num" id="m-u">138</span><span class="l">capacidad probada: 500</span></div>
+      <div class="card stat"><span class="l">Último respaldo</span><span class="v" style="font-size:22px">Hoy 02:00</span><span class="l up">Completado</span></div></div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>Servicio</th><th class="r">Latencia</th><th class="r">Disponibilidad 30 d</th><th>Estado</th></tr></thead><tbody>
+    ${SERVICES.map((s, i) => `<tr><td><div class="row"><span class="ic-box">${icon('server', 'sm')}</span><div><b>${s.n}</b>${s.note ? `<div class="xs" style="color:var(--warning)">${s.note}</div>` : ''}</div></div></td><td class="r num" id="lat-${i}">${s.lat} ms</td><td class="r num">${fmt1(s.up)} %</td><td>${s.st === 'ok' ? statusBadge('ok', 'Operativo') : statusBadge('warn', 'Degradado')}</td></tr>`).join('')}
+    </tbody></table></div></div>`;
+}
+function updateMonitor() {
+  monEpm = Math.max(300, monEpm + Math.round((Math.random() - .5) * 40));
+  monQueue = Math.max(0, monQueue + Math.round((Math.random() - .5) * 6));
+  const e = $('#m-epm'); if (!e) return;
+  e.textContent = fmt(monEpm); $('#m-q').textContent = monQueue;
+  $('#m-u').textContent = 130 + Math.round(Math.random() * 16);
+  SERVICES.forEach((s, i) => { const el = $('#lat-' + i); if (el) el.textContent = Math.max(4, Math.round(s.lat * (0.85 + Math.random() * .3))) + ' ms'; });
+}
+
+// ===== Configuración =====
+function viewConfiguracion() {
+  const c = S.company, u = S.session;
+  return head('Configuración', 'Datos de tu cuenta' + (u.role === 'admin' ? '.' : ' y de tu empresa.')) +
+    `<div class="grid g2" style="align-items:start">
+    ${u.role !== 'admin' ? `<form class="card stack" id="cfg-form" style="gap:16px" novalidate><h2 class="card-title">Datos de la empresa</h2>
+      <div class="field"><label for="cf-n">Razón social</label><input class="input" id="cf-n" value="${esc(c.name)}" ${u.role === 'analista' ? 'disabled' : ''}><span class="err-msg"></span></div>
+      <div class="field"><label for="cf-nit">NIT</label><input class="input" id="cf-nit" value="${esc(c.nit)}" ${u.role === 'analista' ? 'disabled' : ''}></div>
+      <div class="field"><label for="cf-city">Ciudad</label><input class="input" id="cf-city" value="${esc(c.city)}" ${u.role === 'analista' ? 'disabled' : ''}></div>
+      <div class="field"><label for="cf-mail">Correo de contacto</label><input class="input" id="cf-mail" type="email" value="${esc(c.email)}" ${u.role === 'analista' ? 'disabled' : ''}><span class="err-msg"></span></div>
+      ${u.role === 'analista' ? '<p class="hint" style="margin:0">Solo el Usuario Empresa puede cambiar estos datos.</p>' : '<button class="btn primary" type="submit">Guardar cambios</button>'}</form>` : ''}
+    <div class="card stack" style="gap:16px"><h2 class="card-title">Tu cuenta</h2>
+      <div class="row"><span class="avatar" style="width:48px;height:48px;font-size:16px">${esc(u.ini)}</span><div><b>${esc(u.name)}</b><div class="muted small">${esc(u.email)} · ${ROLES[u.role].n}</div></div></div>
+      <div class="hint">${icon('shield', 'sm')} Sesión protegida con token JWT. Tus datos se tratan según la Ley 1581 de 2012.</div>
+      <div class="row wrap"><button class="btn" id="reset-demo">Restablecer datos de demostración</button><button class="btn" id="cfg-logout">${icon('logout', 'sm')}Cerrar sesión</button></div>
+    </div></div>`;
+}
+function afterConfiguracion() {
+  const f = $('#cfg-form');
+  if (f) f.onsubmit = e => {
+    e.preventDefault();
+    const n = $('#cf-n'), m = $('#cf-mail');
+    setErr(n, n.value.trim() ? '' : 'Escribe la razón social.');
+    setErr(m, /^\S+@\S+\.\S+$/.test(m.value) ? '' : 'Escribe un correo válido.');
+    if (!n.value.trim() || !/^\S+@\S+\.\S+$/.test(m.value)) return toast('No se guardaron los cambios', 'Revisa los campos marcados.', false);
+    S.company = { ...S.company, name: n.value.trim(), nit: $('#cf-nit').value, city: $('#cf-city').value, email: m.value };
+    S.session.empresa = S.company.name; store.set('session', S.session);
+    save('company'); toast('Datos guardados', 'La información de la empresa quedó actualizada.'); render();
+  };
+  $('#cfg-logout').onclick = logout;
+  $('#reset-demo').onclick = () => confirmModal({ title: '¿Restablecer la demostración?', text: 'Se borran las reglas, canales, usuarios y segmentos que cambiaste y vuelven los datos de ejemplo.', ok: 'Restablecer', onOk: () => {
+    ['rules', 'integ', 'users', 'segments', 'company', 'registered'].forEach(store.del);
+    S.rules = structuredClone(DEFAULT_RULES); S.integ = structuredClone(DEFAULT_INTEGRATIONS); S.users = structuredClone(DEFAULT_USERS); S.segments = structuredClone(DEFAULT_SEGMENTS);
+    toast('Demostración restablecida'); render();
+  } });
+}
+
+const VIEWS = { inicio: viewInicio, canales: viewCanales, automatizaciones: viewAutomatizaciones, contactos: viewContactos, reportes: viewReportes, analitica: viewAnalitica, segmentacion: viewSegmentacion, exportar: viewExportar, campanas: viewCampanas, admin: viewAdmin, empresas: viewEmpresas, usuarios: viewUsuarios, suscripciones: viewSuscripciones, monitoreo: viewMonitoreo, configuracion: viewConfiguracion };
+const AFTER = { inicio: afterInicio, canales: afterCanales, automatizaciones: afterAutomatizaciones, contactos: afterContactos, reportes: afterReportes, segmentacion: afterSegmentacion, exportar: afterExportar, empresas: afterEmpresas, usuarios: afterUsuarios, configuracion: afterConfiguracion };
+
+// ---------- Eventos globales ----------
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (t.closest('[data-close]')) { closeModal(); return; }
+  if (t.closest('[data-close-drawer]')) { closeDrawer(); return; }
+  const ct = t.closest('[data-contact]'); if (ct) { openContact(ct.dataset.contact); return; }
+  const app = $('#app');
+  if (!app) return;
+  const pop = $('#pop');
+  if (t.closest('#search-btn')) { openPalette(); return; }
+  if (t.closest('#menu-toggle')) { app.classList.add('drawer-open'); $('#side-scrim').hidden = false; return; }
+  if (t.closest('#side-scrim') || (t.closest('.nav-item') && app.classList.contains('drawer-open'))) { app.classList.remove('drawer-open'); $('#side-scrim').hidden = true; }
+  if (t.closest('#collapse-btn')) { S.collapsed = !S.collapsed; store.set('collapsed', S.collapsed); app.classList.toggle('collapsed', S.collapsed); S.route === 'inicio' && setTimeout(drawChart, 50); return; }
+  if (t.closest('#notif-btn')) {
+    if (!pop.hidden && pop.dataset.kind === 'n') { pop.hidden = true; return; }
+    S.notifSeen = true; $('#notif-pip').hidden = true;
+    pop.dataset.kind = 'n';
+    pop.innerHTML = `<div class="ph">Notificaciones</div>${S.notifs.slice(0, 6).map(n => `<div class="pi"><span style="color:${n.bad ? 'var(--danger)' : 'var(--success)'}">${icon(n.bad ? 'alert' : 'check', 'sm')}</span><div><b style="font-size:14px">${esc(n.t)}</b><div class="muted xs">${esc(n.d)} · ${ago(n.ts)}</div></div></div>`).join('')}`;
+    pop.hidden = false; return;
+  }
+  if (t.closest('#avatar-btn')) {
+    if (!pop.hidden && pop.dataset.kind === 'a') { pop.hidden = true; return; }
+    pop.dataset.kind = 'a';
+    const u = S.session;
+    pop.innerHTML = `<div class="pi"><span class="avatar">${esc(u.ini)}</span><div><b>${esc(u.name)}</b><div class="muted xs">${esc(u.email)}</div><div class="muted xs">${ROLES[u.role].n}</div></div></div>
+      <button class="pi" onclick="go('configuracion')">${icon('sliders', 'sm')}Configuración</button><button class="pi" id="pop-logout">${icon('logout', 'sm')}Cerrar sesión</button>`;
+    $('#pop-logout').onclick = logout;
+    pop.hidden = false; return;
+  }
+  if (t.closest('#help-btn')) {
+    openModal(`${modalHead('Ayuda rápida')}<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;color:var(--text-muted)">
+      <li><b style="color:var(--text)">Ctrl+K</b> abre el buscador para ir a cualquier pantalla o contacto.</li>
+      <li>En <b style="color:var(--text)">Inicio</b>, haz clic en un evento de «Actividad en vivo» para ver el perfil del contacto.</li>
+      <li>Puedes <b style="color:var(--text)">pausar</b> el feed; los eventos nuevos quedan en espera.</li>
+      <li>Los avisos de éxito o fallo aparecen siempre arriba a la derecha.</li></ul><div class="modal-actions"><button class="btn primary" data-close>Entendido</button></div>`);
+    return;
+  }
+  if (pop && !pop.hidden && !t.closest('#pop')) pop.hidden = true;
+});
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
+  if (e.key === 'Escape') { if ($('#overlay')) closeModal(); else if ($('#drawer')) closeDrawer(); else { const p = $('#pop'); if (p) p.hidden = true; } }
+  if (e.key === 'Enter' && e.target.matches('tr[data-contact]')) openContact(e.target.dataset.contact);
+});
+
+render();
+</script>
+</body>
+</html>
